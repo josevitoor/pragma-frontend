@@ -1,0 +1,45 @@
+{
+  "name": "frontend-app",
+  "version": "1.0.12",
+  "scripts": {
+    "build-prd": "ng build --configuration production",
+    "start": "ng serve"
+  },
+  "dependencies": {
+    "@angular/animations": "^9.1.11",
+    "@angular/common": "^9.1.11",
+    "@angular/compiler": "^9.1.11",
+    "@angular/core": "^9.1.11",
+    "@angular/forms": "^9.1.11",
+    "@angular/platform-browser": "^9.1.11",
+    "@angular/platform-browser-dynamic": "^9.1.11",
+    "@angular/router": "^9.1.11",
+    "tce-ng-lib": "2.10.59",
+    "rxjs": "^6.5.4",
+    "web-pki": "^2.16.3",
+    "zone.js": "^0.10.2"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^0.901.11",
+    "@angular-devkit/build-ng-packagr": "^0.901.15",
+    "@angular-devkit/architect": "~0.1001.4",
+    "@angular-eslint/builder": "1.2.0",
+    "@angular-eslint/eslint-plugin": "1.2.0",
+    "@angular-eslint/eslint-plugin-template": "1.2.0",
+    "@angular-eslint/schematics": "1.2.0",
+    "@angular-eslint/template-parser": "1.2.0",
+    "@angular/cdk": "^7.3.7",
+    "@angular/cli": "^9.1.12",
+    "@angular/compiler-cli": "^9.1.12",
+    "@angular/material": "^7.3.7",
+    "@types/node": "^12.11.1",
+    "typescript": "3.8.3",
+    "eslint": "^7.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsdoc": "^30.7.0",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "ng-packagr": "^9.0.0",
+    "popper.js": "^1.16.1",
+    "jquery": "^3.6.2"
+  }
+}

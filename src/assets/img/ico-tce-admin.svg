@@ -1,0 +1,35 @@
+<svg width="103" height="69" viewBox="0 0 103 69" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13.5 4L13.5 37" stroke="#FDF3F3"/>
+<path d="M58.5 4L58.5 36.5" stroke="#FDF3F3"/>
+<path d="M13 36.5H59" stroke="white"/>
+<path d="M13 4.5H59" stroke="white"/>
+<path d="M13 8.5H58.5" stroke="white"/>
+<circle cx="56.5" cy="6.5" r="0.5" fill="white"/>
+<circle cx="52.5" cy="6.5" r="0.5" fill="white"/>
+<circle cx="54.5" cy="6.5" r="0.5" fill="white"/>
+<rect x="47" y="11" width="9" height="7" fill="#52C1B6"/>
+<rect x="16" y="29" width="8" height="5" fill="#52C1B6"/>
+<rect x="26" y="30" width="9" height="4" fill="#52C1B6"/>
+<rect x="37" y="30" width="8" height="4" fill="#52C1B6"/>
+<rect x="26" y="11" width="19" height="7" fill="#52C1B6"/>
+<rect x="26" y="20" width="19" height="8" fill="#52C1B6"/>
+<rect x="16" y="11" width="8" height="16" fill="#52C1B6"/>
+<rect x="47" y="20" width="9" height="14" fill="#52C1B6"/>
+<path d="M53.5 32L53.5 65" stroke="#FDF3F3"/>
+<path d="M98.5 32L98.5 64.5" stroke="#FDF3F3"/>
+<path d="M53 64.5H99" stroke="white"/>
+<path d="M53 32.5H99" stroke="white"/>
+<path d="M53 36.5H98.5" stroke="white"/>
+<circle cx="96.5" cy="34.5" r="0.5" fill="white"/>
+<circle cx="92.5" cy="34.5" r="0.5" fill="white"/>
+<circle cx="94.5" cy="34.5" r="0.5" fill="white"/>
+<rect x="66" y="39" width="29" height="7" fill="#52C1B6"/>
+<rect x="66" y="48" width="29" height="13" fill="#52C1B6"/>
+<rect x="56" y="39" width="8" height="22" fill="#52C1B6"/>
+<path d="M30.5 39V53" stroke="#FFF8F8"/>
+<line x1="30" y1="54.5" x2="44" y2="54.5" stroke="white"/>
+<path d="M48.0336 54.316L44.0446 56.7571L43.9251 52.0819L48.0336 54.316Z" fill="#52C1B6"/>
+<circle cx="30" cy="54" r="10" fill="#52C1B6"/>
+<path d="M32.1875 50.0625C32.1875 49.4823 31.957 48.9259 31.5468 48.5157C31.1366 48.1055 30.5802 47.875 30 47.875C29.4198 47.875 28.8634 48.1055 28.4532 48.5157C28.043 48.9259 27.8125 49.4823 27.8125 50.0625V52.6875" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M33.0625 52.6875H26.9375C26.2126 52.6875 25.625 53.2751 25.625 54V58.8125C25.625 59.5374 26.2126 60.125 26.9375 60.125H33.0625C33.7874 60.125 34.375 59.5374 34.375 58.8125V54C34.375 53.2751 33.7874 52.6875 33.0625 52.6875Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,7 @@
+include:
+  - project: devops/ci
+    file: 
+      - common.yml
+
+variables:
+    PROJECT_TYPE: frontend

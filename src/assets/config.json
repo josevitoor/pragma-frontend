@@ -1,0 +1,13 @@
+{
+    "name": "dev",
+    "nomeSistema": "Template",
+    "subTituloHeader": "Template",
+    "descricaoSistema": "Template",
+    "versaoSistema": "1.0.0",
+    "tipoDeOperadoresDisponiveis": [1,2],
+    "production": false,
+    "apiFotoPerfil": "https://tce-common.tce.rn.gov.br/FotoPessoa/",
+    "apiAuthentication": "https://dev-tceauth.tce.rn.gov.br",
+    "apiResources": "https://dev-tceadmin2.tce.rn.gov.br",
+    "apiSistema": "https://dev-tuite.tce.rn.gov.br"
+}

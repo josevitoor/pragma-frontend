@@ -1,0 +1,25 @@
+version: '3.9'
+
+networks:
+  cadrn-network:
+    name: sispfa2-network
+
+services:
+  frontend:
+    container_name: sispfa2-frontend
+    build: .
+    ports:
+      - 3000:80
+    environment:
+      - production=false
+      - versaoSistema=versao-compose
+      - nomeSistema=SisPFA
+      - descricaoSistema=Sistema de Gerenciamento do Plano de Fiscalização Anual-compose
+      - subTituloHeader=Novo SisPFA-compose
+      - tipoDeOperadoresDisponiveis=[1]
+      - apiFotoPerfil=https://tce-common.tce.rn.gov.br/FotoPessoa
+      - apiAuthentication=https://dev-tceauth.tce.rn.gov.br
+      - apiResources=https://dev-tceadmin2.tce.rn.gov.br
+      - processosApi=https://dev-processos.tce.rn.gov.br/api
+      - apiSistema=https://dev-sispfa2.tce.rn.gov.br/api/v1
+      - commonApi=https://dev-tce-commonapi.tce.rn.gov.br
