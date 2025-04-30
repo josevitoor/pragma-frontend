@@ -11,6 +11,7 @@ import br from '@angular/common/locales/br';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing/app.routing.module';
 import { KubernetesModule, TceNgLibModule } from 'tce-ng-lib';
+import { GenerateModule } from './modulos/generate/generate.module';
 
 registerLocaleData(br, 'pt-BR');
 
@@ -22,6 +23,7 @@ registerLocaleData(br, 'pt-BR');
     AppRoutingModule,
     KubernetesModule,
     TceNgLibModule.forRoot((window as any).configuration),
+    GenerateModule,
   ],
   providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }],
   bootstrap: [AppComponent],

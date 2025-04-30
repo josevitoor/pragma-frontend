@@ -1,1 +1,54 @@
-<p>generate-form works!</p>
+<tce-container>
+  <tce-container-header
+    title="Gerador Automatizado de Código CRUD"
+    [showBtn]="false"
+  ></tce-container-header>
+
+  <main class="mt-3">
+    <form [formGroup]="resourceForm">
+      <fieldset>
+        <small class="right-form">(*) Campos Obrigatórios</small>
+        <legend>Formulário Gerador de Código</legend>
+        <div class="form-row mt-2">
+          <div class="col-4">
+            <tce-select-field
+              label="Nome da Tabela"
+              [itemFillSelect]="tableNameList"
+              formControlName="tableName"
+              bindLabelSelect="value"
+              bindValueSelect="value"
+              placeholder="Selecione uma tabela"
+              [control]="resourceForm.get('tableName')"
+            >
+            </tce-select-field>
+          </div>
+          <div class="col-4">
+            <tce-input-field
+              label="Nome da Entidade"
+              formControlName="entityName"
+              type="text"
+              placeholder="Digite o nome da entidade"
+              [control]="resourceForm.get('entityName')"
+            >
+            </tce-input-field>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="mt-3">
+        <button
+          class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+          (click)="onSubmit()"
+        >
+          GERAR
+        </button>
+        <button
+          class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
+          (click)="back()"
+        >
+          VOLTAR
+        </button>
+      </div>
+    </form>
+  </main>
+</tce-container>
