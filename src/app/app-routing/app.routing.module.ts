@@ -15,7 +15,7 @@ const routes: Routes = [
     component: DashboardComponent,
     canActivate: [AuthGuard],
     children: [
-      { path: '', component: InicioComponent },
+      { path: '', component: InicioComponent, data: { breadcrumb: 'Início' } },
       {
         path: 'meuperfil',
         children: [

@@ -32,6 +32,36 @@
             >
             </tce-input-field>
           </div>
+          <div class="col-4">
+            <tce-input-field
+              label="Caminho de Destino API"
+              formControlName="projectApiPath"
+              type="text"
+              placeholder="C:\Workspace\Project"
+              [control]="resourceForm.get('projectApiPath')"
+            >
+            </tce-input-field>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="col-4">
+            <tce-select-field
+              label="Campos com Filtro"
+              [itemFillSelect]="tableColumnsFilterList"
+              formControlName="tableColumnsFilter"
+              bindLabelSelect="columnName"
+              bindValueSelect="columnName"
+              [deveSerMultiplo]="true"
+              placeholder="Selecione os campos da tabela com filtro habilitado"
+              [control]="resourceForm.get('tableColumnsFilter')"
+            >
+            </tce-select-field>
+          </div>
+          <div class="col-2 mt-4">
+            <mat-slide-toggle class="col-4" formControlName="isServerSide">
+              HABILITAR OPÇÕES LADO SERVIDOR
+            </mat-slide-toggle>
+          </div>
         </div>
       </fieldset>
 

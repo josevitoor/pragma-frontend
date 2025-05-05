@@ -17,7 +17,16 @@ export class InformationService extends BaseService<InformationType> {
   /**
    * Retorna lista de nomes de tabelas disponíveis
    */
-  getTableNames(): Promise<string[]> {
+  async getTableNames(): Promise<string[]> {
     return this.http.get<string[]>(`${this.BASE_URL}/table-name`).toPromise();
+  }
+
+  /**
+   * Retorna todos os campos de uma tabela
+   */
+  async getTableColumns(tableName: string): Promise<InformationType[]> {
+    return this.http
+      .get<InformationType[]>(`${this.BASE_URL}/${tableName}`)
+      .toPromise();
   }
 }
