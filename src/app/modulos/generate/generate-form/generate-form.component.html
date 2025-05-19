@@ -5,80 +5,185 @@
   ></tce-container-header>
 
   <main class="mt-3">
-    <form [formGroup]="resourceForm">
-      <fieldset>
-        <small class="right-form">(*) Campos Obrigatórios</small>
-        <legend>Formulário Gerador de Código</legend>
-        <div class="form-row mt-2">
-          <div class="col-4">
-            <tce-select-field
-              label="Nome da Tabela"
-              [itemFillSelect]="tableNameList"
-              formControlName="tableName"
-              bindLabelSelect="value"
-              bindValueSelect="value"
-              placeholder="Selecione uma tabela"
-              [control]="resourceForm.get('tableName')"
+    <mat-horizontal-stepper [linear]="true" #stepper>
+      <!-- Step para Conexão com Banco de Dados -->
+      <mat-step
+        [stepControl]="connectionForm"
+        [completed]="connectionCompleted"
+      >
+        <form [formGroup]="connectionForm">
+          <ng-template matStepLabel>Conexão Banco de Dados</ng-template>
+          <fieldset>
+            <small class="right-form">(*) Campos Obrigatórios</small>
+            <legend>Formulário Conexão Banco de Dados</legend>
+            <div class="form-row">
+              <div class="col-4">
+                <tce-input-field
+                  label="Host"
+                  formControlName="host"
+                  type="text"
+                  placeholder="Digite o host de conexão"
+                  [control]="connectionForm.get('host')"
+                >
+                </tce-input-field>
+              </div>
+              <div class="col-4">
+                <tce-input-field
+                  label="Porta"
+                  formControlName="port"
+                  type="text"
+                  placeholder="Digite a porta de conexão"
+                  [control]="connectionForm.get('port')"
+                >
+                </tce-input-field>
+              </div>
+              <div class="col-4">
+                <tce-input-field
+                  label="Usuário"
+                  formControlName="user"
+                  type="text"
+                  placeholder="Digite o usuário de conexão"
+                  [control]="connectionForm.get('user')"
+                >
+                </tce-input-field>
+              </div>
+              <div class="col-4">
+                <tce-input-field
+                  label="Senha"
+                  formControlName="password"
+                  type="password"
+                  placeholder="Digite a senha de conexão"
+                  [control]="connectionForm.get('password')"
+                >
+                </tce-input-field>
+              </div>
+              <div class="col-4">
+                <tce-input-field
+                  label="Banco de Dados"
+                  formControlName="database"
+                  type="text"
+                  placeholder="Digite o banco de dados da conexão"
+                  [control]="connectionForm.get('database')"
+                >
+                </tce-input-field>
+              </div>
+            </div>
+          </fieldset>
+          <div class="mt-3">
+            <button
+              class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+              (click)="submitConnectionForm(stepper)"
             >
-            </tce-select-field>
+              TESTAR CONEXÃO E AVANÇAR
+            </button>
           </div>
-          <div class="col-4">
-            <tce-input-field
-              label="Nome da Entidade"
-              formControlName="entityName"
-              type="text"
-              placeholder="Digite o nome da entidade"
-              [control]="resourceForm.get('entityName')"
-            >
-            </tce-input-field>
-          </div>
-          <div class="col-4">
-            <tce-input-field
-              label="Caminho de Destino API"
-              formControlName="projectApiPath"
-              type="text"
-              placeholder="C:\Workspace\Project"
-              [control]="resourceForm.get('projectApiPath')"
-            >
-            </tce-input-field>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="col-4">
-            <tce-select-field
-              label="Campos com Filtro"
-              [itemFillSelect]="tableColumnsFilterList"
-              formControlName="tableColumnsFilter"
-              bindLabelSelect="columnName"
-              bindValueSelect="columnName"
-              [deveSerMultiplo]="true"
-              placeholder="Selecione os campos da tabela com filtro habilitado"
-              [control]="resourceForm.get('tableColumnsFilter')"
-            >
-            </tce-select-field>
-          </div>
-          <div class="col-2 mt-4">
-            <mat-slide-toggle class="col-4" formControlName="isServerSide">
-              HABILITAR OPÇÕES LADO SERVIDOR
-            </mat-slide-toggle>
-          </div>
-        </div>
-      </fieldset>
+        </form>
+      </mat-step>
 
-      <div class="mt-3">
-        <button
-          class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
-          (click)="onSubmit()"
-        >
-          GERAR
-        </button>
-        <button
-          class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
-          (click)="back()"
-        >
-          VOLTAR
-        </button>
-      </div>
-    </form>
+      <!-- Step para Caminho da Geração de Código -->
+      <mat-step [stepControl]="pathForm" [completed]="pathCompleted">
+        <form [formGroup]="pathForm">
+          <ng-template matStepLabel>Caminho para Gerar Arquivos</ng-template>
+          <fieldset>
+            <legend>Formulário do Caminho para Gerar Arquivos</legend>
+            <div class="form-row">
+              <div class="col-6">
+                <tce-input-field
+                  label="Caminho de Destino API"
+                  formControlName="projectApiPath"
+                  type="text"
+                  placeholder="C:\Workspace\Project"
+                  [control]="pathForm.get('projectApiPath')"
+                ></tce-input-field>
+              </div>
+            </div>
+          </fieldset>
+          <div class="mt-3">
+            <button
+              class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+              (click)="submitPathForm(stepper)"
+            >
+              VALIDAR CAMINHO E AVANÇAR
+            </button>
+            <button
+              class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
+              (click)="stepper.previous()"
+            >
+              VOLTAR
+            </button>
+          </div>
+        </form>
+      </mat-step>
+
+      <!-- Step para Informaçõe de Geração de Código -->
+      <mat-step [stepControl]="resourceForm">
+        <form [formGroup]="resourceForm">
+          <ng-template matStepLabel>Gerar Código</ng-template>
+          <fieldset>
+            <small class="right-form">(*) Campos Obrigatórios</small>
+            <legend>Formulário Gerador de Código</legend>
+            <div class="form-row mt-2">
+              <div class="col-4">
+                <tce-select-field
+                  label="Nome da Tabela"
+                  [itemFillSelect]="tableNameList"
+                  formControlName="tableName"
+                  bindLabelSelect="value"
+                  bindValueSelect="value"
+                  placeholder="Selecione uma tabela"
+                  [control]="resourceForm.get('tableName')"
+                >
+                </tce-select-field>
+              </div>
+              <div class="col-4">
+                <tce-input-field
+                  label="Nome da Entidade"
+                  formControlName="entityName"
+                  type="text"
+                  placeholder="Digite o nome da entidade"
+                  [control]="resourceForm.get('entityName')"
+                >
+                </tce-input-field>
+              </div>
+              <div class="col-4">
+                <tce-select-field
+                  label="Campos com Filtro"
+                  [itemFillSelect]="tableColumnsFilterList"
+                  formControlName="tableColumnsFilter"
+                  bindLabelSelect="value"
+                  bindValueSelect="value"
+                  [deveSerMultiplo]="true"
+                  placeholder="Selecione os campos da tabela com filtro habilitado"
+                  [control]="resourceForm.get('tableColumnsFilter')"
+                >
+                </tce-select-field>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-3 mt-3">
+                <mat-slide-toggle class="col-4" formControlName="isServerSide">
+                  HABILITAR OPÇÕES LADO SERVIDOR
+                </mat-slide-toggle>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="mt-3">
+            <button
+              class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+              (click)="submitGenerateInfoForm()"
+            >
+              GERAR ARQUIVOS
+            </button>
+            <button
+              class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
+              (click)="stepper.previous()"
+            >
+              VOLTAR
+            </button>
+          </div>
+        </form>
+      </mat-step>
+    </mat-horizontal-stepper>
   </main>
 </tce-container>

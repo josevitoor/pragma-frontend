@@ -1,6 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 import { BaseService, ConfigService } from 'tce-ng-lib';
 import { InformationType } from '../models/InformationType';
+import { ConnectionFilterType } from '../models/ConnectionFilterType';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,20 @@ export class InformationService extends BaseService<InformationType> {
   async getTableColumns(tableName: string): Promise<InformationType[]> {
     return this.http
       .get<InformationType[]>(`${this.BASE_URL}/${tableName}`)
+      .toPromise();
+  }
+
+  /**
+   * Testa conexão com banco de dados
+   */
+  async bdConnection(
+    connectionFilter: ConnectionFilterType
+  ): Promise<InformationType[]> {
+    return this.http
+      .post<InformationType[]>(
+        `${this.BASE_URL}/bd-connection`,
+        connectionFilter
+      )
       .toPromise();
   }
 }

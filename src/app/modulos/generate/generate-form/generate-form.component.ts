@@ -1,5 +1,6 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatStepper } from '@angular/material/stepper';
 import { GenerateBackendFilterType } from 'src/app/models/GenerateBackendFilterType';
 import { InformationType } from 'src/app/models/InformationType';
 import { GenerateService } from 'src/app/services/generate.service';
@@ -16,8 +17,16 @@ export class GenerateFormComponent
   implements OnInit
 {
   service: GenerateService;
+
   tableNameList: string[] = [];
-  tableColumnsFilterList: InformationType[] = [];
+  tableColumnsFilterList: string[] = [];
+  informations: InformationType[] = [];
+
+  connectionForm: FormGroup;
+  pathForm: FormGroup;
+
+  connectionCompleted = false;
+  pathCompleted = false;
 
   constructor(
     protected injector: Injector,
@@ -29,10 +38,18 @@ export class GenerateFormComponent
     this.service = injector.get(GenerateService);
     this.service.customMessageSuccess =
       'Arquivos de código CRUD gerados com sucesso!';
+    this.informationService.customMessageSuccess =
+      'Conexão com banco de dados realizada com sucesso!';
 
-    this.resourceForm = this.formBuilder.group({
-      tableName: [null, [Validators.required]],
-      entityName: [null, [Validators.required]],
+    this.connectionForm = this.formBuilder.group({
+      database: [null, [Validators.required]],
+      user: [null, [Validators.required]],
+      password: [null, [Validators.required]],
+      host: [null, [Validators.required]],
+      port: [null, [Validators.required]],
+    });
+
+    this.pathForm = this.formBuilder.group({
       projectApiPath: [
         null,
         [
@@ -42,6 +59,12 @@ export class GenerateFormComponent
           ),
         ],
       ],
+    });
+
+    this.resourceForm = this.formBuilder.group({
+      tableName: [null, [Validators.required]],
+      entityName: [null, [Validators.required]],
+      projectApiPath: [null, Validators.required],
       tableColumnsFilter: [{ value: [], disabled: true }],
       isServerSide: [false],
     });
@@ -50,12 +73,13 @@ export class GenerateFormComponent
   async ngOnInit(): Promise<void> {
     await super.ngOnInit();
 
-    this.tableNameList = await this.informationService.getTableNames();
     this.resourceForm.get('tableName').valueChanges.subscribe(async (value) => {
       if (value) {
         this.resourceForm.get('tableColumnsFilter').enable();
-        this.tableColumnsFilterList =
-          await this.informationService.getTableColumns(value);
+        this.resourceForm.get('tableColumnsFilter').setValue([]);
+        this.tableColumnsFilterList = this.informations
+          .filter((item) => item.tableName === value)
+          .map((item) => item.columnName);
       } else {
         this.resourceForm.get('tableColumnsFilter').disable();
         this.tableColumnsFilterList = [];
@@ -64,9 +88,75 @@ export class GenerateFormComponent
   }
 
   /**
-   * Realiza a submissão do formulário
+   * Realiza a submissão do formulário com as informações de geração de arquivos
    */
-  async submit() {
+  async submitConnectionForm(stepper: MatStepper) {
+    if (this.connectionForm.invalid) {
+      this.connectionForm.markAllAsTouched();
+      return;
+    }
+
+    const connectionData = this.connectionForm.value;
+
+    try {
+      await this.informationService
+        .bdConnection(connectionData)
+        .then((response) => {
+          this.informations = response;
+          this.tableNameList = [
+            ...new Set(response.map((item) => item.tableName)),
+          ];
+        });
+
+      this.globalMessageService.successMessages.next([
+        this.informationService.customMessageSuccess,
+      ]);
+      this.connectionCompleted = true;
+      stepper.next();
+    } catch (error) {
+      this.globalMessageService.errorMessages.next([
+        error?.error?.Erros[0] ??
+          `Erro ao conectar com banco de dados. Verifique se os dados informados estão corretos.`,
+      ]);
+      this.connectionCompleted = false;
+    }
+  }
+
+  async submitPathForm(stepper: MatStepper) {
+    if (this.connectionForm.invalid) {
+      this.connectionForm.markAllAsTouched();
+      return;
+    }
+
+    const path = this.pathForm.get('projectApiPath')?.value;
+
+    try {
+      await this.service.validateStructure(path);
+
+      this.globalMessageService.successMessages.next([
+        'Caminho validado com sucesso!',
+      ]);
+      this.pathCompleted = true;
+      this.resourceForm.get('projectApiPath')?.setValue(path);
+      stepper.next();
+    } catch (error) {
+      this.globalMessageService.errorMessages.next([
+        error?.error?.Erros[0] ??
+          `O caminho informado não é válido para geração de arquivos`,
+      ]);
+      this.pathCompleted = false;
+    }
+  }
+
+  /**
+   * Verifica se o formulário com as informações de geração de arquivos está válido e chama o método submit()
+   */
+  async submitGenerateInfoForm() {
+    if (this.resourceForm.invalid) {
+      this.resourceForm.markAllAsTouched();
+      return;
+    }
+    Object.assign(this.resource, this.resourceForm.value as InformationType);
     try {
       await this.service.generateCrudFiles(this.resource);
 
@@ -74,20 +164,11 @@ export class GenerateFormComponent
         this.service.customMessageSuccess,
       ]);
 
-      this.resetForm();
+      this.back();
     } catch (error) {
       this.globalMessageService.errorMessages.next([
         `Erro ao gerar os arquivos. ${error?.error?.Message}`,
       ]);
     }
-  }
-
-  /**
-   * Reseta o fómulário após o submit
-   */
-  resetForm(): void {
-    this.resourceForm.reset();
-    this.resourceForm.markAsPristine();
-    this.resourceForm.markAsUntouched();
   }
 }

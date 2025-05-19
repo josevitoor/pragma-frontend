@@ -20,4 +20,15 @@ export class GenerateService extends BaseService<GenerateBackendFilterType> {
       .post<void>(`${this.BASE_URL}/backend-files`, backendFilter)
       .toPromise();
   }
+
+  /**
+   * Validar caminho para geração dos arquivos
+   */
+  validateStructure(pathApi: string): Promise<void> {
+    return this.http
+      .get<void>(
+        `${this.BASE_URL}/validate-structure?projectRootPath=${pathApi}`
+      )
+      .toPromise();
+  }
 }

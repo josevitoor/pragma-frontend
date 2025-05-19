@@ -5,6 +5,7 @@ import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { GenerateRoutingModule } from './generate-routing.module';
 import { GenerateFormComponent } from './generate-form/generate-form.component';
+import { MatStepperModule } from '@angular/material/stepper';
 
 @NgModule({
   declarations: [GenerateFormComponent],
@@ -15,6 +16,7 @@ import { GenerateFormComponent } from './generate-form/generate-form.component';
     TceNgLibModule.forRoot((window as any).configuration),
     TooltipModule,
     MatSlideToggleModule,
+    MatStepperModule,
   ],
 })
 export class GenerateModule {}
