@@ -1,11 +1,11 @@
 import { Injectable, Injector } from '@angular/core';
 import { BaseService, ConfigService } from 'tce-ng-lib';
-import { GenerateBackendFilterType } from '../models/GenerateBackendFilterType';
+import { GenerateFilterType } from '../models/GenerateFilterType';
 
 @Injectable({
   providedIn: 'root',
 })
-export class GenerateService extends BaseService<GenerateBackendFilterType> {
+export class GenerateService extends BaseService<GenerateFilterType> {
   private readonly BASE_URL = `${ConfigService.getEnv().apiSistema}/Generate`;
 
   constructor(injector: Injector) {
@@ -13,21 +13,21 @@ export class GenerateService extends BaseService<GenerateBackendFilterType> {
   }
 
   /**
-   * Gera os arquivos de código CRUD do backend
+   * Gera os arquivos de código CRUD
    */
-  generateCrudFiles(backendFilter: GenerateBackendFilterType): Promise<void> {
+  generateCrudFiles(generateFilter: GenerateFilterType): Promise<void> {
     return this.http
-      .post<void>(`${this.BASE_URL}/backend-files`, backendFilter)
+      .post<void>(`${this.BASE_URL}/generate-files`, generateFilter)
       .toPromise();
   }
 
   /**
    * Validar caminho para geração dos arquivos
    */
-  validateStructure(pathApi: string): Promise<void> {
+  validateStructure(pathApi: string, pathClient: string): Promise<void> {
     return this.http
       .get<void>(
-        `${this.BASE_URL}/validate-structure?projectRootPath=${pathApi}`
+        `${this.BASE_URL}/validate-structure?projectApiRootPath=${pathApi}&projectClientRootPath=${pathClient}`
       )
       .toPromise();
   }

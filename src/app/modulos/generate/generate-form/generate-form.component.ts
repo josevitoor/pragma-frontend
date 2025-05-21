@@ -1,7 +1,7 @@
 import { Component, Injector, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { GenerateBackendFilterType } from 'src/app/models/GenerateBackendFilterType';
+import { GenerateFilterType } from 'src/app/models/GenerateFilterType';
 import { InformationType } from 'src/app/models/InformationType';
 import { GenerateService } from 'src/app/services/generate.service';
 import { InformationService } from 'src/app/services/information.service';
@@ -13,7 +13,7 @@ import { BaseResourceFormComponent } from 'tce-ng-lib';
   styleUrls: ['./generate-form.component.css'],
 })
 export class GenerateFormComponent
-  extends BaseResourceFormComponent<GenerateBackendFilterType>
+  extends BaseResourceFormComponent<GenerateFilterType>
   implements OnInit
 {
   service: GenerateService;
@@ -59,12 +59,20 @@ export class GenerateFormComponent
           ),
         ],
       ],
+      projectClientPath: [
+        null,
+        [
+          Validators.required,
+          Validators.pattern(
+            /^[A-Z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*$/
+          ),
+        ],
+      ],
     });
 
     this.resourceForm = this.formBuilder.group({
       tableName: [null, [Validators.required]],
       entityName: [null, [Validators.required]],
-      projectApiPath: [null, Validators.required],
       tableColumnsFilter: [{ value: [], disabled: true }],
       isServerSide: [false],
     });
@@ -100,7 +108,7 @@ export class GenerateFormComponent
 
     try {
       await this.informationService
-        .bdConnection(connectionData)
+        .getAllInformations(connectionData)
         .then((response) => {
           this.informations = response;
           this.tableNameList = [
@@ -128,16 +136,16 @@ export class GenerateFormComponent
       return;
     }
 
-    const path = this.pathForm.get('projectApiPath')?.value;
+    const apiPath = this.pathForm.get('projectApiPath')?.value;
+    const clientPath = this.pathForm.get('projectClientPath')?.value;
 
     try {
-      await this.service.validateStructure(path);
+      await this.service.validateStructure(apiPath, clientPath);
 
       this.globalMessageService.successMessages.next([
         'Caminho validado com sucesso!',
       ]);
       this.pathCompleted = true;
-      this.resourceForm.get('projectApiPath')?.setValue(path);
       stepper.next();
     } catch (error) {
       this.globalMessageService.errorMessages.next([
@@ -156,9 +164,30 @@ export class GenerateFormComponent
       this.resourceForm.markAllAsTouched();
       return;
     }
-    Object.assign(this.resource, this.resourceForm.value as InformationType);
+
+    const generateFormValues = this.resourceForm.getRawValue();
+    const pathFormValues = this.pathForm.getRawValue();
+    const connectionFormValues = this.connectionForm.getRawValue();
+
+    const generateData: GenerateFilterType = {
+      tableName: generateFormValues.tableName,
+      entityName: generateFormValues.entityName,
+      generateBackendFilter: {
+        projectApiPath: pathFormValues.projectApiPath,
+      },
+      generateFrontendFilter: {
+        projectClientPath: pathFormValues.projectClientPath,
+      },
+      connectionFilter: {
+        host: connectionFormValues.host,
+        port: connectionFormValues.port,
+        user: connectionFormValues.user,
+        password: connectionFormValues.password,
+        database: connectionFormValues.database,
+      },
+    };
     try {
-      await this.service.generateCrudFiles(this.resource);
+      await this.service.generateCrudFiles(generateData);
 
       this.globalMessageService.successMessages.next([
         this.service.customMessageSuccess,

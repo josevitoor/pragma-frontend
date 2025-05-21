@@ -2,6 +2,7 @@ import { Injectable, Injector } from '@angular/core';
 import { BaseService, ConfigService } from 'tce-ng-lib';
 import { InformationType } from '../models/InformationType';
 import { ConnectionFilterType } from '../models/ConnectionFilterType';
+import { HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -32,16 +33,20 @@ export class InformationService extends BaseService<InformationType> {
   }
 
   /**
-   * Testa conexão com banco de dados
+   * Retorna as informações de todas tabelas com base na conexão de banco de dados passada
    */
-  async bdConnection(
+  async getAllInformations(
     connectionFilter: ConnectionFilterType
   ): Promise<InformationType[]> {
+    const params = new HttpParams()
+      .set('host', connectionFilter.host)
+      .set('port', connectionFilter.port.toString())
+      .set('user', connectionFilter.user)
+      .set('password', connectionFilter.password)
+      .set('database', connectionFilter.database);
+
     return this.http
-      .post<InformationType[]>(
-        `${this.BASE_URL}/bd-connection`,
-        connectionFilter
-      )
+      .get<InformationType[]>(`${this.BASE_URL}`, { params })
       .toPromise();
   }
 }
