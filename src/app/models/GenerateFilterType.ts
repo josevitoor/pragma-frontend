@@ -5,6 +5,8 @@ import { GenerateFrontendFilterType } from './GenerateFrontendFilterType';
 export type GenerateFilterType = {
   tableName: string;
   entityName: string;
+  isServerSide: boolean;
+  tableColumnsFilter: Array<string>;
   generateBackendFilter: GenerateBackendFilterType;
   generateFrontendFilter: GenerateFrontendFilterType;
   connectionFilter: ConnectionFilterType;

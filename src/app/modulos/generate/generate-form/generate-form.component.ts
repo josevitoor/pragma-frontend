@@ -172,6 +172,8 @@ export class GenerateFormComponent
     const generateData: GenerateFilterType = {
       tableName: generateFormValues.tableName,
       entityName: generateFormValues.entityName,
+      isServerSide: generateFormValues.isServerSide,
+      tableColumnsFilter: generateFormValues.tableColumnsFilter,
       generateBackendFilter: {
         projectApiPath: pathFormValues.projectApiPath,
       },
