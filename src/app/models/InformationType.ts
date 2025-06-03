@@ -3,5 +3,5 @@ export type InformationType = {
   columnName: string;
   dataType: string;
   isNullable: string;
-  maxLength?: number;
+  maxLength: number;
 };
