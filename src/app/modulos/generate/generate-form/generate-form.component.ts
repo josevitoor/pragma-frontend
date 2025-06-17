@@ -75,7 +75,7 @@ export class GenerateFormComponent
       entityName: [null, [Validators.required]],
       tableColumnsFilter: [{ value: [], disabled: true }],
       isServerSide: [false],
-      tableColumnsList: [[], Validators.required],
+      tableColumnsList: [{ value: [], disabled: true }, Validators.required],
       tableColumnsFormArray: this.formBuilder.array([]),
     });
   }
@@ -86,12 +86,15 @@ export class GenerateFormComponent
     this.resourceForm.get('tableName').valueChanges.subscribe(async (value) => {
       if (value) {
         this.resourceForm.get('tableColumnsFilter').enable();
+        this.resourceForm.get('tableColumnsList').enable();
         this.resourceForm.get('tableColumnsFilter').setValue([]);
+        this.resourceForm.get('tableColumnsList').setValue([]);
         this.tableColumnsFilterList = this.informations
           .filter((item) => item.tableName === value)
           .map((item) => item.columnName);
       } else {
         this.resourceForm.get('tableColumnsFilter').disable();
+        this.resourceForm.get('tableColumnsList').disable();
         this.tableColumnsFilterList = [];
       }
     });
