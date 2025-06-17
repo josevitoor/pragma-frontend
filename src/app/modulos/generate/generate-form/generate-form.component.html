@@ -132,7 +132,7 @@
             <small class="right-form">(*) Campos Obrigatórios</small>
             <legend>Formulário Gerador de Código</legend>
             <div class="form-row mt-2">
-              <div class="col-4">
+              <div class="col-3">
                 <tce-select-field
                   label="Nome da Tabela"
                   [itemFillSelect]="tableNameList"
@@ -144,7 +144,7 @@
                 >
                 </tce-select-field>
               </div>
-              <div class="col-4">
+              <div class="col-3">
                 <tce-input-field
                   label="Nome da Entidade"
                   formControlName="entityName"
@@ -154,7 +154,7 @@
                 >
                 </tce-input-field>
               </div>
-              <div class="col-4">
+              <div class="col-3">
                 <tce-select-field
                   label="Campos com Filtro"
                   [itemFillSelect]="tableColumnsFilterList"
@@ -166,13 +166,57 @@
                   [control]="resourceForm.get('tableColumnsFilter')"
                 >
                 </tce-select-field>
+                <div class="col-3 mt-3">
+                  <mat-slide-toggle formControlName="isServerSide">
+                    HABILITAR OPÇÕES LADO SERVIDOR
+                  </mat-slide-toggle>
+                </div>
               </div>
             </div>
             <div class="form-row">
-              <div class="col-3 mt-3">
-                <mat-slide-toggle class="col-4" formControlName="isServerSide">
-                  HABILITAR OPÇÕES LADO SERVIDOR
-                </mat-slide-toggle>
+              <div class="col-4">
+                <tce-select-field
+                  label="Colunas para Listagem"
+                  [itemFillSelect]="tableColumnsFilterList"
+                  formControlName="tableColumnsList"
+                  bindLabelSelect="value"
+                  bindValueSelect="value"
+                  [deveSerMultiplo]="true"
+                  placeholder="Selecione as colunas que irão aparecer na tabela"
+                  [control]="resourceForm.get('tableColumnsList')"
+                >
+                </tce-select-field>
+              </div>
+            </div>
+            <div
+              formArrayName="tableColumnsFormArray"
+              class="d-flex justify-content-center flex-column align-items-center"
+            >
+              <div
+                class="form-row w-100 justify-content-center"
+                *ngFor="
+                  let column of tableColumnsFormArray.controls;
+                  let i = index
+                "
+                [formGroupName]="i"
+              >
+                <div class="col-3">
+                  <tce-input-field
+                    label="Coluna"
+                    formControlName="databaseColumn"
+                    type="text"
+                    [control]="column.get('databaseColumn')"
+                    [disabled]="true"
+                  ></tce-input-field>
+                </div>
+                <div class="col-3">
+                  <tce-input-field
+                    label="Rótulo"
+                    formControlName="displayName"
+                    type="text"
+                    [control]="column.get('displayName')"
+                  ></tce-input-field>
+                </div>
               </div>
             </div>
           </fieldset>

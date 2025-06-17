@@ -1,5 +1,5 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { GenerateFilterType } from 'src/app/models/GenerateFilterType';
 import { InformationType } from 'src/app/models/InformationType';
@@ -75,6 +75,8 @@ export class GenerateFormComponent
       entityName: [null, [Validators.required]],
       tableColumnsFilter: [{ value: [], disabled: true }],
       isServerSide: [false],
+      tableColumnsList: [[], Validators.required],
+      tableColumnsFormArray: this.formBuilder.array([]),
     });
   }
 
@@ -93,6 +95,26 @@ export class GenerateFormComponent
         this.tableColumnsFilterList = [];
       }
     });
+
+    this.resourceForm
+      .get('tableColumnsList')
+      ?.valueChanges.subscribe((selected: string[]) => {
+        const formArray = this.tableColumnsFormArray;
+        formArray.clear();
+
+        selected.forEach((column) => {
+          formArray.push(
+            this.formBuilder.group({
+              databaseColumn: [{ value: column, disabled: true }],
+              displayName: [this.formatLabel(column)],
+            })
+          );
+        });
+      });
+  }
+
+  get tableColumnsFormArray(): FormArray {
+    return this.resourceForm.get('tableColumnsFormArray') as FormArray;
   }
 
   /**
@@ -179,6 +201,12 @@ export class GenerateFormComponent
       },
       generateFrontendFilter: {
         projectClientPath: pathFormValues.projectClientPath,
+        tableColumnsList: this.tableColumnsFormArray
+          .getRawValue()
+          .map((item: any) => ({
+            databaseColumn: item.databaseColumn,
+            displayName: item.displayName,
+          })),
       },
       connectionFilter: {
         host: connectionFormValues.host,
@@ -201,5 +229,15 @@ export class GenerateFormComponent
         `Erro ao gerar os arquivos. ${error?.error?.Message}`,
       ]);
     }
+  }
+
+  /**
+   * Adiciona um label padrão
+   */
+  private formatLabel(column: string): string {
+    return column
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase())
+      .trim();
   }
 }
