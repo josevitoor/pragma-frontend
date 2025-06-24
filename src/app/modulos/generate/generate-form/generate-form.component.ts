@@ -68,6 +68,15 @@ export class GenerateFormComponent
           ),
         ],
       ],
+      routerPath: [
+        null,
+        [
+          Validators.required,
+          Validators.pattern(
+            /^[A-Z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*$/
+          ),
+        ],
+      ],
     });
 
     this.resourceForm = this.formBuilder.group({
@@ -100,20 +109,34 @@ export class GenerateFormComponent
     });
 
     this.resourceForm
-      .get('tableColumnsList')
-      ?.valueChanges.subscribe((selected: string[]) => {
-        const formArray = this.tableColumnsFormArray;
-        formArray.clear();
+      .get('tableColumnsFilter')
+      ?.valueChanges.subscribe(() => this.updateTableColumnsFormArray());
 
-        selected.forEach((column) => {
-          formArray.push(
-            this.formBuilder.group({
-              databaseColumn: [{ value: column, disabled: true }],
-              displayName: [this.formatLabel(column)],
-            })
-          );
-        });
-      });
+    this.resourceForm
+      .get('tableColumnsList')
+      ?.valueChanges.subscribe(() => this.updateTableColumnsFormArray());
+  }
+
+  private updateTableColumnsFormArray() {
+    const filterColumns =
+      this.resourceForm.get('tableColumnsFilter')?.value || [];
+    const listColumns = this.resourceForm.get('tableColumnsList')?.value || [];
+
+    const allSelectedColumns = Array.from(
+      new Set([...filterColumns, ...listColumns])
+    );
+
+    const formArray = this.tableColumnsFormArray;
+    formArray.clear();
+
+    allSelectedColumns.forEach((column) => {
+      formArray.push(
+        this.formBuilder.group({
+          databaseColumn: [{ value: column, disabled: true }],
+          displayName: [this.formatLabel(column)],
+        })
+      );
+    });
   }
 
   get tableColumnsFormArray(): FormArray {
@@ -156,16 +179,17 @@ export class GenerateFormComponent
   }
 
   async submitPathForm(stepper: MatStepper) {
-    if (this.connectionForm.invalid) {
-      this.connectionForm.markAllAsTouched();
+    if (this.pathForm.invalid) {
+      this.pathForm.markAllAsTouched();
       return;
     }
 
     const apiPath = this.pathForm.get('projectApiPath')?.value;
     const clientPath = this.pathForm.get('projectClientPath')?.value;
+    const routerPath = this.pathForm.get('routerPath')?.value;
 
     try {
-      await this.service.validateStructure(apiPath, clientPath);
+      await this.service.validateStructure(apiPath, clientPath, routerPath);
 
       this.globalMessageService.successMessages.next([
         'Caminho validado com sucesso!',
@@ -204,6 +228,7 @@ export class GenerateFormComponent
       },
       generateFrontendFilter: {
         projectClientPath: pathFormValues.projectClientPath,
+        routerPath: pathFormValues.routerPath,
         tableColumnsList: this.tableColumnsFormArray
           .getRawValue()
           .map((item: any) => ({
@@ -229,7 +254,7 @@ export class GenerateFormComponent
       this.back();
     } catch (error) {
       this.globalMessageService.errorMessages.next([
-        `Erro ao gerar os arquivos. ${error?.error?.Message}`,
+        error?.error?.Erros[0] ?? `Erro ao gerar arquivos.`,
       ]);
     }
   }

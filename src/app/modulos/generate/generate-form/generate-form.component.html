@@ -87,7 +87,7 @@
           <fieldset>
             <legend>Formulário do Caminho para Gerar Arquivos</legend>
             <div class="form-row">
-              <div class="col-6">
+              <div class="col-4">
                 <tce-input-field
                   label="Caminho de Destino API"
                   formControlName="projectApiPath"
@@ -96,13 +96,22 @@
                   [control]="pathForm.get('projectApiPath')"
                 ></tce-input-field>
               </div>
-              <div class="col-6">
+              <div class="col-4">
                 <tce-input-field
                   label="Caminho de Destino Client"
                   formControlName="projectClientPath"
                   type="text"
                   placeholder="C:\Workspace\Project"
                   [control]="pathForm.get('projectClientPath')"
+                ></tce-input-field>
+              </div>
+              <div class="col-4">
+                <tce-input-field
+                  label="Caminho do Arquivo de Rotas"
+                  formControlName="routerPath"
+                  type="text"
+                  placeholder="C:\Workspace\Project\src\app\router.ts"
+                  [control]="pathForm.get('routerPath')"
                 ></tce-input-field>
               </div>
             </div>
@@ -127,7 +136,7 @@
       <!-- Step para Informaçõe de Geração de Código -->
       <mat-step [stepControl]="resourceForm">
         <form [formGroup]="resourceForm">
-          <ng-template matStepLabel>Gerar Código</ng-template>
+          <ng-template matStepLabel>Configurar Geraração de Código</ng-template>
           <fieldset>
             <small class="right-form">(*) Campos Obrigatórios</small>
             <legend>Formulário Gerador de Código</legend>
@@ -156,6 +165,19 @@
               </div>
               <div class="col-3">
                 <tce-select-field
+                  label="Campos para Listagem"
+                  [itemFillSelect]="tableColumnsFilterList"
+                  formControlName="tableColumnsList"
+                  bindLabelSelect="value"
+                  bindValueSelect="value"
+                  [deveSerMultiplo]="true"
+                  placeholder="Selecione os campos que irão aparecer na tabela"
+                  [control]="resourceForm.get('tableColumnsList')"
+                >
+                </tce-select-field>
+              </div>
+              <div class="col-3">
+                <tce-select-field
                   label="Campos com Filtro"
                   [itemFillSelect]="tableColumnsFilterList"
                   formControlName="tableColumnsFilter"
@@ -166,57 +188,49 @@
                   [control]="resourceForm.get('tableColumnsFilter')"
                 >
                 </tce-select-field>
-                <div class="col-3 mt-3">
-                  <mat-slide-toggle formControlName="isServerSide">
-                    HABILITAR OPÇÕES LADO SERVIDOR
-                  </mat-slide-toggle>
-                </div>
               </div>
             </div>
             <div class="form-row">
-              <div class="col-4">
-                <tce-select-field
-                  label="Colunas para Listagem"
-                  [itemFillSelect]="tableColumnsFilterList"
-                  formControlName="tableColumnsList"
-                  bindLabelSelect="value"
-                  bindValueSelect="value"
-                  [deveSerMultiplo]="true"
-                  placeholder="Selecione as colunas que irão aparecer na tabela"
-                  [control]="resourceForm.get('tableColumnsList')"
-                >
-                </tce-select-field>
+              <div class="col-3 mt-4">
+                <mat-slide-toggle formControlName="isServerSide">
+                  HABILITAR OPÇÕES LADO SERVIDOR
+                </mat-slide-toggle>
               </div>
             </div>
-            <div
-              formArrayName="tableColumnsFormArray"
-              class="d-flex justify-content-center flex-column align-items-center"
-            >
+            <div class="form-row mt-2">
               <div
-                class="form-row w-100 justify-content-center"
-                *ngFor="
-                  let column of tableColumnsFormArray.controls;
-                  let i = index
-                "
-                [formGroupName]="i"
+                class="col-12"
+                *ngIf="tableColumnsFormArray.controls.length > 0"
               >
-                <div class="col-3">
-                  <tce-input-field
-                    label="Coluna"
-                    formControlName="databaseColumn"
-                    type="text"
-                    [control]="column.get('databaseColumn')"
-                    [disabled]="true"
-                  ></tce-input-field>
-                </div>
-                <div class="col-3">
-                  <tce-input-field
-                    label="Rótulo"
-                    formControlName="displayName"
-                    type="text"
-                    [control]="column.get('displayName')"
-                  ></tce-input-field>
-                </div>
+                <table class="table table-bordered text-center w-100">
+                  <thead class="thead-light">
+                    <tr>
+                      <th style="width: 40%">Campo da Tabela</th>
+                      <th>Rótulo na Listagem</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="tableColumnsFormArray">
+                    <tr
+                      *ngFor="
+                        let column of tableColumnsFormArray.controls;
+                        let i = index
+                      "
+                      [formGroupName]="i"
+                    >
+                      <td class="align-middle">
+                        {{ column.get("databaseColumn")?.value }}
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="displayName"
+                          placeholder="Digite o rótulo"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </fieldset>

@@ -24,10 +24,14 @@ export class GenerateService extends BaseService<GenerateFilterType> {
   /**
    * Validar caminho para geração dos arquivos
    */
-  validateStructure(pathApi: string, pathClient: string): Promise<void> {
+  validateStructure(
+    pathApi: string,
+    pathClient: string,
+    routerPath: string
+  ): Promise<void> {
     return this.http
       .get<void>(
-        `${this.BASE_URL}/validate-structure?projectApiRootPath=${pathApi}&projectClientRootPath=${pathClient}`
+        `${this.BASE_URL}/validate-structure?projectApiRootPath=${pathApi}&projectClientRootPath=${pathClient}&routerFilePath=${routerPath}`
       )
       .toPromise();
   }
