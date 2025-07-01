@@ -247,7 +247,7 @@ export class GenerateFormComponent
     try {
       await this.service.generateCrudFiles(generateData);
 
-      await this.router.navigate['dashboard'].then(() => {
+      await this.router.navigate(['dashboard']).then(() => {
         this.globalMessageService.successMessages.next([
           this.service.customMessageSuccess,
         ]);
