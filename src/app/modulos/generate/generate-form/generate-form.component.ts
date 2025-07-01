@@ -247,11 +247,11 @@ export class GenerateFormComponent
     try {
       await this.service.generateCrudFiles(generateData);
 
-      this.globalMessageService.successMessages.next([
-        this.service.customMessageSuccess,
-      ]);
-
-      this.back();
+      await this.router.navigate['dashboard'].then(() => {
+        this.globalMessageService.successMessages.next([
+          this.service.customMessageSuccess,
+        ]);
+      });
     } catch (error) {
       this.globalMessageService.errorMessages.next([
         error?.error?.Erros[0] ?? `Erro ao gerar arquivos.`,
