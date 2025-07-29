@@ -8,7 +8,7 @@ import { InformationService } from 'src/app/services/information.service';
 import { BaseResourceFormComponent } from 'tce-ng-lib';
 
 @Component({
-  selector: 'automation-generate-form',
+  selector: 'pragma-generate-form',
   templateUrl: './generate-form.component.html',
   styleUrls: ['./generate-form.component.css'],
 })
@@ -42,11 +42,11 @@ export class GenerateFormComponent
       'Conexão com banco de dados realizada com sucesso!';
 
     this.connectionForm = this.formBuilder.group({
-      database: [null, [Validators.required]],
-      user: [null, [Validators.required]],
-      password: [null, [Validators.required]],
-      host: [null, [Validators.required]],
-      port: [null, [Validators.required]],
+      baseDados: [null, [Validators.required, Validators.maxLength(100)]],
+      usuario: [null, [Validators.required, Validators.maxLength(50)]],
+      senha: [null, [Validators.required, Validators.maxLength(200)]],
+      servidor: [null, [Validators.required, Validators.maxLength(200)]],
+      porta: [null, [Validators.required]],
     });
 
     this.pathForm = this.formBuilder.group({
@@ -57,6 +57,7 @@ export class GenerateFormComponent
           Validators.pattern(
             /^[A-Z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*$/
           ),
+          Validators.maxLength(500),
         ],
       ],
       projectClientPath: [
@@ -66,6 +67,7 @@ export class GenerateFormComponent
           Validators.pattern(
             /^[A-Z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*$/
           ),
+          Validators.maxLength(500),
         ],
       ],
       routerPath: [
@@ -237,11 +239,11 @@ export class GenerateFormComponent
           })),
       },
       connectionFilter: {
-        host: connectionFormValues.host,
-        port: connectionFormValues.port,
-        user: connectionFormValues.user,
-        password: connectionFormValues.password,
-        database: connectionFormValues.database,
+        servidor: connectionFormValues.servidor,
+        porta: connectionFormValues.porta,
+        usuario: connectionFormValues.usuario,
+        senha: connectionFormValues.senha,
+        baseDados: connectionFormValues.baseDados,
       },
     };
     try {

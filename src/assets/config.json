@@ -1,8 +1,8 @@
 {
   "name": "dev",
-  "nomeSistema": "Automation",
-  "subTituloHeader": "Gerador de Código",
-  "descricaoSistema": "Gerador de automatizado de código CRUD",
+  "nomeSistema": "PRAGMA",
+  "subTituloHeader": "Automação de código CRUD",
+  "descricaoSistema": "Plataforma Rápida para Geração de Módulos Automatizados",
   "versaoSistema": "1.0.0",
   "tipoDeOperadoresDisponiveis": [1, 2],
   "production": false,

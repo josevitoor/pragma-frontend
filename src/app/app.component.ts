@@ -3,12 +3,12 @@ import { Title } from '@angular/platform-browser';
 import { ConfigService } from 'tce-ng-lib';
 
 @Component({
-  selector: 'automation-root',
+  selector: 'pragma-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  title = 'automation-app';
+  title = 'pragma-app';
 
   public constructor(private titleService: Title) {
     this.setTitle(ConfigService.getEnv().nomeSistema);

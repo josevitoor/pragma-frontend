@@ -1,7 +1,7 @@
 export type ConnectionFilterType = {
-  database: string;
-  user: string;
-  password: string;
-  host: string;
-  port: string;
+  baseDados: string;
+  usuario: string;
+  senha: string;
+  servidor: string;
+  porta: string;
 };

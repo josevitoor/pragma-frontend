@@ -39,11 +39,11 @@ export class InformationService extends BaseService<InformationType> {
     connectionFilter: ConnectionFilterType
   ): Promise<InformationType[]> {
     const params = new HttpParams()
-      .set('host', connectionFilter.host)
-      .set('port', connectionFilter.port.toString())
-      .set('user', connectionFilter.user)
-      .set('password', connectionFilter.password)
-      .set('database', connectionFilter.database);
+      .set('servidor', connectionFilter.servidor)
+      .set('porta', connectionFilter.porta.toString())
+      .set('usuario', connectionFilter.usuario)
+      .set('senha', connectionFilter.senha)
+      .set('baseDados', connectionFilter.baseDados);
 
     return this.http
       .get<InformationType[]>(`${this.BASE_URL}`, { params })
