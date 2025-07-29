@@ -33,6 +33,13 @@ const routes: Routes = [
             (a) => a.GenerateModule
           ),
       },
+      {
+        path: 'configuracao',
+        loadChildren: () =>
+          import('../modulos/configuracao/configuracao.module').then(
+            (a) => a.ConfiguracaoModule
+          ),
+      },
       { path: '404', component: PageNotFoundComponent },
       { path: '**', redirectTo: '404' },
     ],
