@@ -1,0 +1,70 @@
+<tce-container>
+  <tce-container-header title="Configuração de Conexão com Banco de Dados"></tce-container-header>
+
+  <main>
+    <tce-table
+      id="tabela-configuracao"
+      (pageSizeChange)="pageSize = $event"
+      (searchTermChange)="searchTerm = $event"
+      (pageChange)="page = $event"
+    >
+      <div legend>
+        <fa-icon icon="edit" class="ml-3"></fa-icon> Editar
+        <fa-icon icon="trash" class="ml-3 mr-1"></fa-icon> Excluir
+      </div>
+      <table
+        aria-describedby="Tabela para a listagem de configurações"
+        content
+        class="table table-striped text-center"
+      >
+        <thead>
+          <tr>
+            <th></th>
+            <th tceSortable="servidor" (sort)="onSort($event)">Servidor</th>
+            <th tceSortable="baseDados" (sort)="onSort($event)">
+              Base de Dados
+            </th>
+            <th tceSortable="porta" (sort)="onSort($event)">Porta</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="
+              let item of resources$
+                | async
+                | paginate
+                  : {
+                      id: 'tabela-configuracao',
+                      itemsPerPage: pageSize,
+                      currentPage: page,
+                      totalItems: total$ | async
+                    }
+            "
+          >
+            <td></td>
+            <td>{{ item.servidor }}</td>
+            <td>{{ item.baseDados }}</td>
+            <td>{{ item.porta }}</td>
+            <td>
+              <fa-icon
+                icon="edit"
+                tooltip="Editar"
+                [routerLink]="[item.idConfiguracao, 'edit']"
+              ></fa-icon>
+              <fa-icon
+                icon="trash"
+                tooltip="Excluir"
+                class="ml-2"
+                (click)="deleteResource(item.idConfiguracao)"
+              ></fa-icon>
+            </td>
+          </tr>
+          <tr *ngIf="(resources$ | async)?.length == 0">
+            <td colspan="5">Nenhuma configuração encontrada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </tce-table>
+  </main>
+</tce-container>

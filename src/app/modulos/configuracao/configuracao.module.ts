@@ -5,11 +5,13 @@ import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ConfiguracaoRoutingModule } from './configuracao-routing.module';
 import { MatStepperModule } from '@angular/material/stepper';
-import { ConfiguracaoFormComponent } from './configuracao-form/configuracao-form.component';
-import { ConfiguracaoListComponent } from './configuracao-list/configuracao-list.component';
+import { ConfiguracaoConexaoBancoFormComponent } from './configuracao-conexao-banco-form/configuracao-conexao-banco-form.component';
+import { ConfiguracaoConexaoBancoListComponent } from './configuracao-conexao-banco-list/configuracao-conexao-banco-list.component';
+import { ConfiguracaoCaminhosListComponent } from './configuracao-caminhos-list/configuracao-caminhos-list.component';
+import { ConfiguracaoCaminhosFormComponent } from './configuracao-caminhos-form/configuracao-caminhos-form.component';
 
 @NgModule({
-  declarations: [ConfiguracaoFormComponent, ConfiguracaoListComponent],
+  declarations: [ConfiguracaoConexaoBancoFormComponent, ConfiguracaoConexaoBancoListComponent, ConfiguracaoCaminhosListComponent, ConfiguracaoCaminhosFormComponent],
   imports: [
     CommonModule,
     KubernetesModule,

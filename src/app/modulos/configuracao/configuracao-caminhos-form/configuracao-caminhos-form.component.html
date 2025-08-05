@@ -1,0 +1,76 @@
+<tce-container>
+  <tce-container-header [title]="pageTitle" [showBtn]="false"></tce-container-header>
+  <main class="mt-3">
+    <form [formGroup]="resourceForm">
+      <fieldset>
+        <small class="right-form">(*) Campos Obrigatórios</small>
+        <legend>Formulário de Configuracao Caminhos</legend>
+        <div class="form-row mt-2">
+          <tce-input-field
+            class="col-3"
+            label="Caminho Api"
+            type="text"
+            formControlName="caminhoApi"
+            [control]="resourceForm.get('caminhoApi')"
+            maxCaracteres="500"
+          ></tce-input-field>
+          <tce-input-field
+            class="col-3"
+            label="Caminho Cliente"
+            type="text"
+            formControlName="caminhoCliente"
+            [control]="resourceForm.get('caminhoCliente')"
+            maxCaracteres="500"
+          ></tce-input-field>
+          <tce-input-field
+            class="col-3"
+            label="Caminho Arquivo Rota"
+            type="text"
+            formControlName="caminhoArquivoRota"
+            [control]="resourceForm.get('caminhoArquivoRota')"
+            maxCaracteres="500"
+          ></tce-input-field>
+          <tce-input-field
+            class="col-3"
+            label="Data Inclusao"
+            type="date"
+            formControlName="dataInclusao"
+            [control]="resourceForm.get('dataInclusao')"
+            
+          ></tce-input-field>
+          <tce-input-field
+            class="col-3"
+            label="Id Operador Inclusao"
+            type="number"
+            formControlName="idOperadorInclusao"
+            [control]="resourceForm.get('idOperadorInclusao')"
+            
+          ></tce-input-field>
+          <tce-input-field
+            class="col-3"
+            label="Id Sessao"
+            type="number"
+            formControlName="idSessao"
+            [control]="resourceForm.get('idSessao')"
+            
+          ></tce-input-field>
+        </div>
+      </fieldset>
+
+      <div class="mt-3">
+        <button
+          class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+          (click)="onSubmit()"
+        >
+          SALVAR
+        </button>
+        <button
+          class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
+          (click)="back()"
+        >
+          VOLTAR
+        </button>
+      </div>
+    </form>
+  </main>
+</tce-container>

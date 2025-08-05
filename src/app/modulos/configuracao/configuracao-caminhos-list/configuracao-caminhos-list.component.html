@@ -1,9 +1,16 @@
 <tce-container>
-  <tce-container-header title="Configuração"></tce-container-header>
+  <tce-container-header title="Configuração de Caminho do Projeto"></tce-container-header>
+
+  <tce-filter class="my-4" (find)="onFilter()" (clear)="clearFilters()">
+    <form [formGroup]="resourceFilterForm">
+      <div class="form-row">
+      </div>
+    </form>
+  </tce-filter>
 
   <main>
     <tce-table
-      id="tabela-configuracao"
+      [id]="'tabela-ConfiguracaoCaminhos'"
       (pageSizeChange)="pageSize = $event"
       (searchTermChange)="searchTerm = $event"
       (pageChange)="page = $event"
@@ -13,18 +20,16 @@
         <fa-icon icon="trash" class="ml-3 mr-1"></fa-icon> Excluir
       </div>
       <table
-        aria-describedby="Tabela para a listagem de configurações"
+        aria-describedby="Tabela para a listagem de Configuracao Caminhos"
         content
         class="table table-striped text-center"
       >
         <thead>
           <tr>
             <th></th>
-            <th tceSortable="servidor" (sort)="onSort($event)">Servidor</th>
-            <th tceSortable="baseDados" (sort)="onSort($event)">
-              Base de Dados
-            </th>
-            <th tceSortable="porta" (sort)="onSort($event)">Porta</th>
+            <th tceSortable="caminhoCliente" (sort)="onSort($event)" >Caminho do Projeto Cliente</th>
+            <th tceSortable="caminhoApi" (sort)="onSort($event)" >Caminho do Projeto Api</th>
+            <th tceSortable="caminhoArquivoRota" (sort)="onSort($event)" >Caminho do Arquivo de Rotas</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -35,7 +40,7 @@
                 | async
                 | paginate
                   : {
-                      id: 'tabela-configuracao',
+                      id: 'tabela-ConfiguracaoCaminhos',
                       itemsPerPage: pageSize,
                       currentPage: page,
                       totalItems: total$ | async
@@ -43,24 +48,27 @@
             "
           >
             <td></td>
-            <td>{{ item.servidor }}</td>
-            <td>{{ item.baseDados }}</td>
-            <td>{{ item.porta }}</td>
+            <td>{{ item.caminhoCliente }}</td>
+            <td>{{ item.caminhoApi }}</td>
+            <td>{{ item.caminhoArquivoRota }}</td>
             <td>
               <fa-icon
                 icon="edit"
                 tooltip="Editar"
-                [routerLink]="[item.idConfiguracao, 'edit']"
+                [routerLink]="[item.idConfiguracaoCaminho, 'edit']" 
               ></fa-icon>
               <fa-icon
                 icon="trash"
                 tooltip="Excluir"
-                (click)="deleteResource(item.idConfiguracao)"
+                class="ml-2"
+                (click)="deleteResource(item.idConfiguracaoCaminho)" 
               ></fa-icon>
             </td>
           </tr>
           <tr *ngIf="(resources$ | async)?.length == 0">
-            <td colspan="5">Nenhuma configuração encontrada.</td>
+            <td colspan="5">
+              Nenhum Configuracao Caminhos encontrado.
+            </td>
           </tr>
         </tbody>
       </table>
