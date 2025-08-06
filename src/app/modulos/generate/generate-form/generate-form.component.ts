@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { GenerateFilterType } from 'src/app/models/GenerateFilterType';
@@ -6,6 +6,11 @@ import { InformationType } from 'src/app/models/InformationType';
 import { GenerateService } from 'src/app/services/generate.service';
 import { InformationService } from 'src/app/services/information.service';
 import { BaseResourceFormComponent } from 'tce-ng-lib';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { ConfiguracaoConexaoBancoModalComponent } from '../../configuracao/configuracao-conexao-banco-modal/configuracao-conexao-banco-modal.component';
+import { ConfiguracaoConexaoBancoType } from 'src/app/models/ConfiguracaoConexaoBancoType';
+import { ConfiguracaoCaminhosModalComponent } from '../../configuracao/configuracao-caminhos-modal/configuracao-caminhos-modal.component';
+import { ConfiguracaoCaminhosType } from 'src/app/models/ConfiguracaoCaminhosType';
 
 @Component({
   selector: 'pragma-generate-form',
@@ -28,10 +33,13 @@ export class GenerateFormComponent
   connectionCompleted = false;
   pathCompleted = false;
 
+  modalRef: BsModalRef;
+
   constructor(
     protected injector: Injector,
     private formBuilder: FormBuilder,
-    private informationService: InformationService
+    private informationService: InformationService,
+    private bsModalService: BsModalService
   ) {
     super(new GenerateService(injector));
 
@@ -148,7 +156,7 @@ export class GenerateFormComponent
   /**
    * Realiza a submissão do formulário com as informações de geração de arquivos
    */
-  async submitConnectionForm(stepper: MatStepper) {
+  async submitConnectionForm(stepper: MatStepper): Promise<void> {
     if (this.connectionForm.invalid) {
       this.connectionForm.markAllAsTouched();
       return;
@@ -180,6 +188,9 @@ export class GenerateFormComponent
     }
   }
 
+  /**
+   * Realiza a submissão do formulário com as informações de caminhos do projeto
+   */
   async submitPathForm(stepper: MatStepper) {
     if (this.pathForm.invalid) {
       this.pathForm.markAllAsTouched();
@@ -210,7 +221,7 @@ export class GenerateFormComponent
   /**
    * Verifica se o formulário com as informações de geração de arquivos está válido e chama o método submit()
    */
-  async submitGenerateInfoForm() {
+  async submitGenerateInfoForm(): Promise<void> {
     if (this.resourceForm.invalid) {
       this.resourceForm.markAllAsTouched();
       return;
@@ -259,6 +270,56 @@ export class GenerateFormComponent
         error?.error?.Erros[0] ?? `Erro ao gerar arquivos.`,
       ]);
     }
+  }
+
+  /**
+   * Abre o modal para selecionar as configurações de conexão com banco de dados
+   */
+  async openModalConfiguracaoConexaoBanco(): Promise<void> {
+    this.modalRef = this.bsModalService.show(
+      ConfiguracaoConexaoBancoModalComponent,
+      {
+        class: 'modal-dialog modal-dialog-centered modal-xl',
+        focus: true,
+        backdrop: 'static',
+        keyboard: true,
+      }
+    );
+
+    this.modalRef?.content?.conexaoSelecionada.subscribe(
+      (conexao: ConfiguracaoConexaoBancoType) => {
+        this.connectionForm.get('baseDados')?.setValue(conexao?.baseDados);
+        this.connectionForm.get('usuario')?.setValue(conexao?.usuario);
+        this.connectionForm.get('senha')?.setValue(conexao?.senha);
+        this.connectionForm.get('servidor')?.setValue(conexao?.servidor);
+        this.connectionForm.get('porta')?.setValue(conexao?.porta);
+      }
+    );
+  }
+
+  /**
+   * Abre o modal para selecionar as configurações de caminho do projeto
+   */
+  async openModalConfiguracaoCaminho(): Promise<void> {
+    this.modalRef = this.bsModalService.show(
+      ConfiguracaoCaminhosModalComponent,
+      {
+        class: 'modal-dialog modal-dialog-centered modal-xl',
+        focus: true,
+        backdrop: 'static',
+        keyboard: true,
+      }
+    );
+
+    this.modalRef?.content?.caminhoSelecionado.subscribe(
+      (conexao: ConfiguracaoCaminhosType) => {
+        this.pathForm.get('projectApiPath')?.setValue(conexao?.caminhoApi);
+        this.pathForm
+          .get('projectClientPath')
+          ?.setValue(conexao?.caminhoCliente);
+        this.pathForm.get('routerPath')?.setValue(conexao?.caminhoArquivoRota);
+      }
+    );
   }
 
   /**

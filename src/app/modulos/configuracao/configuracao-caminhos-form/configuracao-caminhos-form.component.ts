@@ -23,9 +23,6 @@ export class ConfiguracaoCaminhosFormComponent
       caminhoApi: [null, [Validators.required, Validators.maxLength(500)]],
       caminhoCliente: [null, [Validators.required, Validators.maxLength(500)]],
       caminhoArquivoRota: [null, [Validators.required, Validators.maxLength(500)]],
-      dataInclusao: [null, [Validators.required]],
-      idOperadorInclusao: [null, [Validators.required]],
-      idSessao: [null, [Validators.required]],
     });
 
     this.service = injector.get(ConfiguracaoCaminhosService);

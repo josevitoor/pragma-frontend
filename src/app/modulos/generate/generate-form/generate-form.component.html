@@ -47,6 +47,8 @@
                 >
                 </tce-input-field>
               </div>
+            </div>
+            <div class="form-row">
               <div class="col-4">
                 <tce-input-field
                   label="Senha"
@@ -69,9 +71,16 @@
               </div>
             </div>
           </fieldset>
-          <div class="mt-3">
+          <div class="mt-3 d-flex justify-content-between flex-wrap">
             <button
-              class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+              class="btn btn-primary mb-2 w-sm-auto"
+              (click)="openModalConfiguracaoConexaoBanco()"
+            >
+              SELECIONAR CONEXÃO
+            </button>
+
+            <button
+              class="btn btn-primary mb-2 w-sm-auto"
               (click)="submitConnectionForm(stepper)"
             >
               TESTAR CONEXÃO E AVANÇAR
@@ -87,7 +96,7 @@
           <fieldset>
             <legend>Formulário do Caminho para Gerar Arquivos</legend>
             <div class="form-row">
-              <div class="col-4">
+              <div class="col-6">
                 <tce-input-field
                   label="Caminho de Destino API"
                   formControlName="projectApiPath"
@@ -96,7 +105,7 @@
                   [control]="pathForm.get('projectApiPath')"
                 ></tce-input-field>
               </div>
-              <div class="col-4">
+              <div class="col-6">
                 <tce-input-field
                   label="Caminho de Destino Client"
                   formControlName="projectClientPath"
@@ -105,7 +114,9 @@
                   [control]="pathForm.get('projectClientPath')"
                 ></tce-input-field>
               </div>
-              <div class="col-4">
+            </div>
+            <div class="form-row">
+              <div class="col-8">
                 <tce-input-field
                   label="Caminho do Arquivo de Rotas"
                   formControlName="routerPath"
@@ -116,18 +127,26 @@
               </div>
             </div>
           </fieldset>
-          <div class="mt-3">
+          <div class="mt-3 d-flex justify-content-between flex-wrap">
+            <div class="d-flex flex-wrap gap-2">
+              <button
+                class="btn btn-outline-success w-auto mb-2 mb-sm-0"
+                (click)="stepper.previous()"
+              >
+                VOLTAR
+              </button>
+              <button
+                class="btn btn-primary w-auto mb-2 mb-sm-0 ml-3"
+                (click)="openModalConfiguracaoCaminho()"
+              >
+                SELECIONAR CAMINHO
+              </button>
+            </div>
             <button
-              class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+              class="btn btn-primary w-auto mb-2 mb-sm-0"
               (click)="submitPathForm(stepper)"
             >
               VALIDAR CAMINHO E AVANÇAR
-            </button>
-            <button
-              class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
-              (click)="stepper.previous()"
-            >
-              VOLTAR
             </button>
           </div>
         </form>
@@ -235,18 +254,18 @@
             </div>
           </fieldset>
 
-          <div class="mt-3">
-            <button
-              class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
-              (click)="submitGenerateInfoForm()"
-            >
-              GERAR ARQUIVOS
-            </button>
+          <div class="mt-3 d-flex justify-content-between flex-wrap">
             <button
               class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
               (click)="stepper.previous()"
             >
               VOLTAR
+            </button>
+            <button
+              class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+              (click)="submitGenerateInfoForm()"
+            >
+              GERAR ARQUIVOS
             </button>
           </div>
         </form>

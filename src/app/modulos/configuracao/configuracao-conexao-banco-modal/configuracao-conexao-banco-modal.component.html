@@ -1,0 +1,78 @@
+<tce-container>
+  <div class="modal-header">
+    <tce-container-header
+      title="Adicionar Conexão ao Formulário"
+      [showBtn]="false"
+    ></tce-container-header>
+    <button
+      type="button"
+      class="close pull-right"
+      aria-label="Close"
+      (click)="modalRef.hide()"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <main>
+    <div class="modal-body">
+      <tce-table
+        id="tabela-configuracao"
+        (pageSizeChange)="pageSize = $event"
+        (searchTermChange)="searchTerm = $event"
+        (pageChange)="page = $event"
+      >
+        <div legend>
+          <fa-icon icon="share" class="ml-3"></fa-icon> Selecionar
+        </div>
+        <table
+          aria-describedby="Tabela para a listagem de configurações"
+          content
+          class="table table-striped text-center"
+        >
+          <thead>
+            <tr>
+              <th></th>
+              <th tceSortable="servidor" (sort)="onSort($event)">Servidor</th>
+              <th tceSortable="baseDados" (sort)="onSort($event)">
+                Base de Dados
+              </th>
+              <th tceSortable="porta" (sort)="onSort($event)">Porta</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="
+                let item of resources$
+                  | async
+                  | paginate
+                    : {
+                        id: 'tabela-configuracao',
+                        itemsPerPage: pageSize,
+                        currentPage: page,
+                        totalItems: total$ | async
+                      }
+              "
+            >
+              <td></td>
+              <td>{{ item.servidor }}</td>
+              <td>{{ item.baseDados }}</td>
+              <td>{{ item.porta }}</td>
+              <td>
+                <fa-icon
+                  icon="share"
+                  tooltip="Selecionar"
+                  (click)="selecionarConexao(item)"
+                ></fa-icon>
+              </td>
+            </tr>
+            <tr *ngIf="(resources$ | async)?.length == 0">
+              <td colspan="5">Nenhuma configuração encontrada.</td>
+            </tr>
+          </tbody>
+        </table>
+      </tce-table>
+    </div>
+  </main>
+</tce-container>

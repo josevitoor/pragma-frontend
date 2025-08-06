@@ -1,0 +1,89 @@
+<tce-container>
+  <div class="modal-header">
+    <tce-container-header
+      title="Adicionar Caminho ao Formulário"
+      [showBtn]="false"
+    ></tce-container-header>
+    <button
+      type="button"
+      class="close pull-right"
+      aria-label="Close"
+      (click)="modalRef.hide()"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <main>
+    <div class="modal-body">
+      <tce-container>
+        <main>
+          <tce-table
+            id="tabela-configuracao-caminho"
+            (pageSizeChange)="pageSize = $event"
+            (searchTermChange)="searchTerm = $event"
+            (pageChange)="page = $event"
+          >
+            <div legend>
+              <fa-icon icon="share" class="ml-3"></fa-icon> Selecionar
+            </div>
+            <table
+              aria-describedby="Tabela para a listagem de Configuracao Caminhos"
+              content
+              class="table table-striped text-center"
+            >
+              <thead>
+                <tr>
+                  <th></th>
+                  <th tceSortable="caminhoCliente" (sort)="onSort($event)">
+                    Caminho do Projeto Cliente
+                  </th>
+                  <th tceSortable="caminhoApi" (sort)="onSort($event)">
+                    Caminho do Projeto Api
+                  </th>
+                  <th tceSortable="caminhoArquivoRota" (sort)="onSort($event)">
+                    Caminho do Arquivo de Rotas
+                  </th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="
+                    let item of resources$
+                      | async
+                      | paginate
+                        : {
+                            id: 'tabela-configuracao-caminho',
+                            itemsPerPage: pageSize,
+                            currentPage: page,
+                            totalItems: total$ | async
+                          }
+                  "
+                >
+                  <td></td>
+                  <td>{{ item.caminhoCliente }}</td>
+                  <td>{{ item.caminhoApi }}</td>
+                  <td>{{ item.caminhoArquivoRota }}</td>
+                  <td>
+                    <fa-icon
+                      icon="share"
+                      tooltip="Selecionar"
+                      class="ml-2"
+                      (click)="selecionarCaminhos(item)"
+                    ></fa-icon>
+                  </td>
+                </tr>
+                <tr *ngIf="(resources$ | async)?.length == 0">
+                  <td colspan="5">
+                    Nenhuma Configuração de Caminhos Encontrado.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </tce-table>
+        </main>
+      </tce-container>
+    </div>
+  </main></tce-container
+>

@@ -6,6 +6,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { GenerateRoutingModule } from './generate-routing.module';
 import { GenerateFormComponent } from './generate-form/generate-form.component';
 import { MatStepperModule } from '@angular/material/stepper';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 @NgModule({
   declarations: [GenerateFormComponent],
@@ -17,6 +18,7 @@ import { MatStepperModule } from '@angular/material/stepper';
     TooltipModule,
     MatSlideToggleModule,
     MatStepperModule,
+    ModalModule.forRoot(),
   ],
 })
 export class GenerateModule {}

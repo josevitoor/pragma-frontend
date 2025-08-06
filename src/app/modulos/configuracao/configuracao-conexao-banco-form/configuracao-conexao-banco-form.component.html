@@ -1,1 +1,83 @@
-<p>configuracao-form works!</p>
+<tce-container>
+  <tce-container-header
+    [title]="pageTitle"
+    [showBtn]="false"
+  ></tce-container-header>
+  <main class="mt-3">
+    <form [formGroup]="resourceForm">
+      <fieldset>
+        <small class="right-form">(*) Campos Obrigatórios</small>
+        <legend>Formulário de Configuração de Conexão do Banco de Dados</legend>
+        <div class="form-row">
+          <div class="col-4">
+            <tce-input-field
+              label="Servidor"
+              formControlName="servidor"
+              type="text"
+              placeholder="Digite o servidor de conexão"
+              [control]="resourceForm.get('servidor')"
+            >
+            </tce-input-field>
+          </div>
+          <div class="col-4">
+            <tce-input-field
+              label="Porta"
+              formControlName="porta"
+              type="text"
+              placeholder="Digite a porta de conexão"
+              [control]="resourceForm.get('porta')"
+            >
+            </tce-input-field>
+          </div>
+          <div class="col-4">
+            <tce-input-field
+              label="Usuário"
+              formControlName="usuario"
+              type="text"
+              placeholder="Digite o usuário de conexão"
+              [control]="resourceForm.get('usuario')"
+            >
+            </tce-input-field>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="col-4">
+            <tce-input-field
+              label="Senha"
+              formControlName="senha"
+              type="password"
+              placeholder="Digite a senha de conexão"
+              [control]="resourceForm.get('senha')"
+            >
+            </tce-input-field>
+          </div>
+          <div class="col-4">
+            <tce-input-field
+              label="Banco de Dados"
+              formControlName="baseDados"
+              type="text"
+              placeholder="Digite o banco de dados da conexão"
+              [control]="resourceForm.get('baseDados')"
+            >
+            </tce-input-field>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="mt-3">
+        <button
+          class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+          (click)="onSubmit()"
+        >
+          SALVAR
+        </button>
+        <button
+          class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
+          (click)="back()"
+        >
+          VOLTAR
+        </button>
+      </div>
+    </form>
+  </main>
+</tce-container>

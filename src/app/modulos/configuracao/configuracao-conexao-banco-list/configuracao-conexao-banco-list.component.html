@@ -1,5 +1,7 @@
 <tce-container>
-  <tce-container-header title="Configuração de Conexão com Banco de Dados"></tce-container-header>
+  <tce-container-header
+    title="Configuração de Conexão com Banco de Dados"
+  ></tce-container-header>
 
   <main>
     <tce-table
@@ -25,6 +27,9 @@
               Base de Dados
             </th>
             <th tceSortable="porta" (sort)="onSort($event)">Porta</th>
+            <th tceSortable="dataInclusao" (sort)="onSort($event)">
+              Data Inclusão
+            </th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -46,6 +51,7 @@
             <td>{{ item.servidor }}</td>
             <td>{{ item.baseDados }}</td>
             <td>{{ item.porta }}</td>
+            <td>{{ item.dataInclusao | date : "dd/MM/yyyy" }}</td>
             <td>
               <fa-icon
                 icon="edit"
@@ -61,7 +67,7 @@
             </td>
           </tr>
           <tr *ngIf="(resources$ | async)?.length == 0">
-            <td colspan="5">Nenhuma configuração encontrada.</td>
+            <td colspan="6">Nenhuma configuração encontrada.</td>
           </tr>
         </tbody>
       </table>
