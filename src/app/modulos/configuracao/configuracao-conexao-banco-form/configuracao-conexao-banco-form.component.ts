@@ -36,4 +36,30 @@ export class ConfiguracaoConexaoBancoFormComponent
   async ngOnInit(): Promise<void> {
     await super.ngOnInit();
   }
+
+  /**
+   * Realiza a submissão do formulário com as informações de conexão do banco de dados
+   */
+  async submitConnectionForm(): Promise<void> {
+    if (this.resourceForm.invalid) {
+      this.resourceForm.markAllAsTouched();
+      return;
+    }
+
+    const connectionData = this.resourceForm.value;
+    try {
+      await this.service.validateConnection(connectionData).then();
+
+      Object.assign(
+        this.resource,
+        this.resourceForm.value as ConfiguracaoConexaoBancoType
+      );
+      await this.submit();
+    } catch (error) {
+      this.globalMessageService.errorMessages.next([
+        error?.error?.Erros[0] ??
+          `Erro ao conectar com banco de dados. Verifique se os dados informados estão corretos.`,
+      ]);
+    }
+  }
 }

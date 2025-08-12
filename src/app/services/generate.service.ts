@@ -20,19 +20,4 @@ export class GenerateService extends BaseService<GenerateFilterType> {
       .post<void>(`${this.BASE_URL}/generate-files`, generateFilter)
       .toPromise();
   }
-
-  /**
-   * Validar caminho para geração dos arquivos
-   */
-  validateStructure(
-    pathApi: string,
-    pathClient: string,
-    routerPath: string
-  ): Promise<void> {
-    return this.http
-      .get<void>(
-        `${this.BASE_URL}/validate-structure?projectApiRootPath=${pathApi}&projectClientRootPath=${pathClient}&routerFilePath=${routerPath}`
-      )
-      .toPromise();
-  }
 }

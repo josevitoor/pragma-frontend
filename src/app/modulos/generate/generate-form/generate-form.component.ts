@@ -11,6 +11,7 @@ import { ConfiguracaoConexaoBancoModalComponent } from '../../configuracao/confi
 import { ConfiguracaoConexaoBancoType } from 'src/app/models/ConfiguracaoConexaoBancoType';
 import { ConfiguracaoCaminhosModalComponent } from '../../configuracao/configuracao-caminhos-modal/configuracao-caminhos-modal.component';
 import { ConfiguracaoCaminhosType } from 'src/app/models/ConfiguracaoCaminhosType';
+import { ConfiguracaoCaminhosService } from 'src/app/services/configuracao-caminhos.service';
 
 @Component({
   selector: 'pragma-generate-form',
@@ -39,6 +40,7 @@ export class GenerateFormComponent
     protected injector: Injector,
     private formBuilder: FormBuilder,
     private informationService: InformationService,
+    private caminhosService: ConfiguracaoCaminhosService,
     private bsModalService: BsModalService
   ) {
     super(new GenerateService(injector));
@@ -155,7 +157,7 @@ export class GenerateFormComponent
   }
 
   /**
-   * Realiza a submissão do formulário com as informações de geração de arquivos
+   * Realiza a submissão do formulário com as informações de conexão do banco de dados
    */
   async submitConnectionForm(stepper: MatStepper): Promise<void> {
     if (this.connectionForm.invalid) {
@@ -203,7 +205,11 @@ export class GenerateFormComponent
     const routerPath = this.pathForm.get('routerPath')?.value;
 
     try {
-      await this.service.validateStructure(apiPath, clientPath, routerPath);
+      await this.caminhosService.validateStructure(
+        apiPath,
+        clientPath,
+        routerPath
+      );
 
       this.globalMessageService.successMessages.next([
         'Caminho validado com sucesso!',
