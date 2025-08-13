@@ -237,6 +237,16 @@
                 </mat-slide-toggle>
               </div>
             </div>
+            <div
+              *ngIf="showTceBaseWarning"
+              class="alert alert-warning mt-2"
+              role="alert"
+            >
+              <strong>Atenção:</strong> Caso o projeto não utilize biblioteca
+              TCE Base, que é o padrão atual, pode ser necessário ajustar alguns
+              imports de infraestrutura nos serviços gerados, pois eles são
+              específicos do projeto e não da biblioteca.
+            </div>
             <div class="form-row mt-2">
               <div
                 class="col-12"

@@ -34,6 +34,8 @@ export class GenerateFormComponent
   connectionCompleted = false;
   pathCompleted = false;
 
+  showTceBaseWarning = false;
+
   modalRef: BsModalRef;
 
   constructor(
@@ -128,6 +130,10 @@ export class GenerateFormComponent
     this.resourceForm
       .get('tableColumnsList')
       ?.valueChanges.subscribe(() => this.updateTableColumnsFormArray());
+
+    this.resourceForm.get('hasTceBase').valueChanges.subscribe((value) => {
+      this.showTceBaseWarning = !value;
+    });
   }
 
   private updateTableColumnsFormArray() {
