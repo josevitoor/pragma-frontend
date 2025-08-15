@@ -1,11 +1,10 @@
 <tce-container>
   <tce-container-header
-    title="Configuração de Conexão com Banco de Dados"
+    title="Configuração de Estrutura do Projeto"
   ></tce-container-header>
-
   <main>
     <tce-table
-      id="tabela-configuracao"
+      [id]="'tabela-ConfiguracaoEstruturaProjeto'"
       (pageSizeChange)="pageSize = $event"
       (searchTermChange)="searchTerm = $event"
       (pageChange)="page = $event"
@@ -15,20 +14,18 @@
         <fa-icon icon="trash" class="ml-3 mr-1"></fa-icon> Excluir
       </div>
       <table
-        aria-describedby="Tabela para a listagem de configurações"
+        aria-describedby="Tabela para a listagem de Configuracao Estrutura Projeto"
         content
         class="table table-striped text-center"
       >
         <thead>
           <tr>
             <th></th>
-            <th tceSortable="servidor" (sort)="onSort($event)">Servidor</th>
-            <th tceSortable="baseDados" (sort)="onSort($event)">
-              Base de Dados
+            <th tceSortable="nomeEstrutura" (sort)="onSort($event)">
+              Estrutura do Projeto
             </th>
-            <th tceSortable="porta" (sort)="onSort($event)">Porta</th>
             <th tceSortable="dataInclusao" (sort)="onSort($event)">
-              Data Inclusão
+              Data de Inclusão
             </th>
             <th>Ações</th>
           </tr>
@@ -40,7 +37,7 @@
                 | async
                 | paginate
                   : {
-                      id: 'tabela-configuracao',
+                      id: 'tabela-ConfiguracaoEstruturaProjeto',
                       itemsPerPage: pageSize,
                       currentPage: page,
                       totalItems: total$ | async
@@ -48,26 +45,26 @@
             "
           >
             <td></td>
-            <td>{{ item.servidor }}</td>
-            <td>{{ item.baseDados }}</td>
-            <td>{{ item.porta }}</td>
+            <td>{{ item.nomeEstrutura }}</td>
             <td>{{ item.dataInclusao | date : "dd/MM/yyyy" }}</td>
             <td>
               <fa-icon
                 icon="edit"
                 tooltip="Editar"
-                [routerLink]="[item.idConfiguracaoConexaoBanco, 'edit']"
+                [routerLink]="[item.idConfiguracaoEstrutura, 'edit']"
               ></fa-icon>
               <fa-icon
                 icon="trash"
                 tooltip="Excluir"
                 class="ml-2"
-                (click)="deleteItem(item.idConfiguracaoConexaoBanco)"
+                (click)="deleteItem(item.idConfiguracaoEstrutura)"
               ></fa-icon>
             </td>
           </tr>
           <tr *ngIf="(resources$ | async)?.length == 0">
-            <td colspan="6">Nenhuma configuração encontrada.</td>
+            <td colspan="4">
+              Nenhum Configuracao Estrutura Projeto encontrado.
+            </td>
           </tr>
         </tbody>
       </table>

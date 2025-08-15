@@ -12,6 +12,8 @@ import { ConfiguracaoCaminhosListComponent } from './configuracao-caminhos-list/
 import { ConfiguracaoCaminhosFormComponent } from './configuracao-caminhos-form/configuracao-caminhos-form.component';
 import { ConfiguracaoConexaoBancoModalComponent } from './configuracao-conexao-banco-modal/configuracao-conexao-banco-modal.component';
 import { ConfiguracaoCaminhosModalComponent } from './configuracao-caminhos-modal/configuracao-caminhos-modal.component';
+import { ConfiguracaoEstruturaProjetoFormComponent } from './configuracao-estrutura-projeto-form/configuracao-estrutura-projeto-form.component';
+import { ConfiguracaoEstruturaProjetoListComponent } from './configuracao-estrutura-projeto-list/configuracao-estrutura-projeto-list.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +23,8 @@ import { ConfiguracaoCaminhosModalComponent } from './configuracao-caminhos-moda
     ConfiguracaoCaminhosFormComponent,
     ConfiguracaoConexaoBancoModalComponent,
     ConfiguracaoCaminhosModalComponent,
+    ConfiguracaoEstruturaProjetoFormComponent,
+    ConfiguracaoEstruturaProjetoListComponent,
   ],
   imports: [
     CommonModule,

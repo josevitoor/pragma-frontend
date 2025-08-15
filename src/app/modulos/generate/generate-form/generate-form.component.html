@@ -116,14 +116,17 @@
               </div>
             </div>
             <div class="form-row">
-              <div class="col-8">
-                <tce-input-field
-                  label="Caminho do Arquivo de Rotas"
-                  formControlName="routerPath"
-                  type="text"
-                  placeholder="C:\Workspace\Project\src\app\router.ts"
-                  [control]="pathForm.get('routerPath')"
-                ></tce-input-field>
+              <div class="col-6">
+                <tce-select-field
+                  label="Estrutura do Projeto"
+                  [itemFillSelect]="configuracoesEstruturas"
+                  formControlName="idConfiguracaoEstrutura"
+                  bindLabelSelect="nomeEstrutura"
+                  bindValueSelect="idConfiguracaoEstrutura"
+                  placeholder="Selecione uma tabela"
+                  [control]="resourceForm.get('idConfiguracaoEstrutura')"
+                >
+                </tce-select-field>
               </div>
             </div>
           </fieldset>

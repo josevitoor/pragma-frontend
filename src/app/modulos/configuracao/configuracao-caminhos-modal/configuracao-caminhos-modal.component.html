@@ -41,9 +41,6 @@
                   <th tceSortable="caminhoApi" (sort)="onSort($event)">
                     Caminho do Projeto Api
                   </th>
-                  <th tceSortable="caminhoArquivoRota" (sort)="onSort($event)">
-                    Caminho do Arquivo de Rotas
-                  </th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -64,7 +61,6 @@
                   <td></td>
                   <td>{{ item.caminhoCliente }}</td>
                   <td>{{ item.caminhoApi }}</td>
-                  <td>{{ item.caminhoArquivoRota }}</td>
                   <td>
                     <fa-icon
                       icon="share"

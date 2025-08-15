@@ -1,0 +1,179 @@
+<tce-container>
+  <tce-container-header
+    [title]="pageTitle"
+    [showBtn]="false"
+  ></tce-container-header>
+  <main class="mt-3">
+    <form [formGroup]="resourceForm">
+      <fieldset>
+        <small class="right-form">(*) Campos Obrigatórios</small>
+        <legend>Formulário de Configuração da Estrutura do Projeto</legend>
+
+        <!-- Nome da Estrutura -->
+        <div class="form-row mt-2">
+          <tce-input-field
+            class="col-3"
+            label="Nome da Estrutura do Projeto"
+            placeholder="Digite o nome da estrutura do projeto"
+            type="text"
+            formControlName="nomeEstrutura"
+            [control]="resourceForm.get('nomeEstrutura')"
+          ></tce-input-field>
+        </div>
+
+        <!-- ================= API ================= -->
+        <fieldset class="mt-3">
+          <legend>API</legend>
+
+          <!-- Arquivos API -->
+          <fieldset>
+            <legend>Arquivos</legend>
+            <div class="form-row mt-2">
+              <tce-input-field
+                class="col-6"
+                label="Dependency Injection Config"
+                placeholder="Digite o caminho do arquivo Dependency Injection Config"
+                type="text"
+                formControlName="apiDependencyInjectionConfig"
+                [control]="resourceForm.get('apiDependencyInjectionConfig')"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-6"
+                label="Configure Map"
+                placeholder="Digite o caminho do arquivo Configure Map"
+                type="text"
+                formControlName="apiConfigureMap"
+                [control]="resourceForm.get('apiConfigureMap')"
+              ></tce-input-field>
+            </div>
+            <div class="form-row mt-2">
+              <tce-input-field
+                class="col-6"
+                label="Contexts"
+                placeholder="Digite o caminho do arquivo Contexts"
+                type="text"
+                formControlName="apiContexts"
+                [control]="resourceForm.get('apiContexts')"
+              ></tce-input-field>
+            </div>
+          </fieldset>
+
+          <!-- Pastas API -->
+          <fieldset class="mt-3">
+            <legend>Pastas</legend>
+            <div class="form-row mt-2">
+              <tce-input-field
+                class="col-6"
+                label="Controllers"
+                placeholder="Digite o caminho da pasta Controllers"
+                type="text"
+                formControlName="apiControllers"
+                [control]="resourceForm.get('apiControllers')"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-6"
+                label="Entities"
+                placeholder="Digite o caminho da pasta Entities"
+                type="text"
+                formControlName="apiEntities"
+                [control]="resourceForm.get('apiEntities')"
+              ></tce-input-field>
+            </div>
+            <div class="form-row mt-2">
+              <tce-input-field
+                class="col-6"
+                label="Mapping"
+                placeholder="Digite o caminho da pasta Mapping"
+                type="text"
+                formControlName="apiMapping"
+                [control]="resourceForm.get('apiMapping')"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-6"
+                label="Services"
+                placeholder="Digite o caminho da pasta Services"
+                type="text"
+                formControlName="apiServices"
+                [control]="resourceForm.get('apiServices')"
+              ></tce-input-field>
+            </div>
+          </fieldset>
+        </fieldset>
+
+        <!-- ================= CLIENTE ================= -->
+        <fieldset class="mt-3">
+          <legend>Cliente</legend>
+
+          <!-- Arquivos Cliente -->
+          <fieldset>
+            <legend>Arquivos</legend>
+            <div class="form-row mt-2">
+              <tce-input-field
+                class="col-6"
+                label="App Module"
+                placeholder="Digite o caminho do arquivo App Module"
+                type="text"
+                formControlName="clientAppModule"
+                [control]="resourceForm.get('clientAppModule')"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-6"
+                label="Routing"
+                placeholder="Digite o caminho do arquivo Routing"
+                type="text"
+                formControlName="clientArquivoRotas"
+                [control]="resourceForm.get('clientArquivoRotas')"
+              ></tce-input-field>
+            </div>
+          </fieldset>
+
+          <!-- Pastas Cliente -->
+          <fieldset class="mt-3">
+            <legend>Pastas</legend>
+            <div class="form-row mt-2">
+              <tce-input-field
+                class="col-4"
+                label="Services"
+                placeholder="Digite o caminho da pasta Services"
+                type="text"
+                formControlName="clientServices"
+                [control]="resourceForm.get('clientServices')"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-4"
+                label="Models"
+                placeholder="Digite o caminho da pasta Models"
+                type="text"
+                formControlName="clientModels"
+                [control]="resourceForm.get('clientModels')"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-4"
+                label="Módulos"
+                placeholder="Digite o caminho da pasta Módulos"
+                type="text"
+                formControlName="clientModulos"
+                [control]="resourceForm.get('clientModulos')"
+              ></tce-input-field>
+            </div>
+          </fieldset>
+        </fieldset>
+      </fieldset>
+
+      <div class="mt-3">
+        <button
+          class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
+          (click)="onSubmit()"
+        >
+          SALVAR
+        </button>
+        <button
+          class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
+          (click)="back()"
+        >
+          VOLTAR
+        </button>
+      </div>
+    </form>
+  </main>
+</tce-container>

@@ -28,9 +28,7 @@
             <th tceSortable="caminhoApi" (sort)="onSort($event)">
               Caminho do Projeto Api
             </th>
-            <th tceSortable="caminhoArquivoRota" (sort)="onSort($event)">
-              Caminho do Arquivo de Rotas
-            </th>
+            <th>Estrutura do Projeto</th>
             <th tceSortable="dataInclusao" (sort)="onSort($event)">
               Data de Inclusão
             </th>
@@ -54,7 +52,7 @@
             <td></td>
             <td>{{ item.caminhoCliente }}</td>
             <td>{{ item.caminhoApi }}</td>
-            <td>{{ item.caminhoArquivoRota }}</td>
+            <td>{{ item.configuracaoEstruturaProjeto?.nomeEstrutura }}</td>
             <td>{{ item.dataInclusao | date : "dd/MM/yyyy" }}</td>
             <td>
               <fa-icon
@@ -66,7 +64,7 @@
                 icon="trash"
                 tooltip="Excluir"
                 class="ml-2"
-                (click)="deleteResource(item.idConfiguracaoCaminho)"
+                (click)="deleteItem(item.idConfiguracaoCaminho)"
               ></fa-icon>
             </td>
           </tr>

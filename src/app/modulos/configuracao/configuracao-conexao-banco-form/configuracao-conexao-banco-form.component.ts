@@ -2,7 +2,7 @@ import { Component, Injector, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ConfiguracaoConexaoBancoType } from 'src/app/models/ConfiguracaoConexaoBancoType';
 import { ConfiguracaoConexaoBancoService } from 'src/app/services/configuracao-conexao-banco.service';
-import { BaseResourceFormComponent } from 'tce-ng-lib';
+import { AlertsService, BaseResourceFormComponent } from 'tce-ng-lib';
 
 @Component({
   selector: 'pragma-configuracao-conexao-banco-form',
@@ -15,7 +15,11 @@ export class ConfiguracaoConexaoBancoFormComponent
   pageTitle: string;
   service: ConfiguracaoConexaoBancoService;
 
-  constructor(protected injector: Injector, private formBuilder: FormBuilder) {
+  constructor(
+    protected injector: Injector,
+    private formBuilder: FormBuilder,
+    private alert: AlertsService
+  ) {
     super(new ConfiguracaoConexaoBancoService(injector));
 
     this.resourceForm = this.formBuilder.group({
@@ -56,10 +60,11 @@ export class ConfiguracaoConexaoBancoFormComponent
       );
       await this.submit();
     } catch (error) {
-      this.globalMessageService.errorMessages.next([
+      this.alert.error(
+        'Erro!',
         error?.error?.Erros[0] ??
-          `Erro ao conectar com banco de dados. Verifique se os dados informados estão corretos.`,
-      ]);
+          `Erro ao conectar com banco de dados. Verifique se os dados informados estão corretos.`
+      );
     }
   }
 }
