@@ -29,7 +29,6 @@ export class ConfiguracaoCaminhosModalComponent
     this.searchTermFields = {
       caminhoCliente: true,
       caminhoApi: true,
-      caminhoArquivoRota: true,
       dataInclusao: true,
     };
   }

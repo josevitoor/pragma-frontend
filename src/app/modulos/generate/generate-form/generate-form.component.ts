@@ -331,7 +331,6 @@ export class GenerateFormComponent
         this.pathForm
           .get('projectClientPath')
           ?.setValue(conexao?.caminhoCliente);
-        this.pathForm.get('routerPath')?.setValue(conexao?.caminhoArquivoRota);
       }
     );
   }

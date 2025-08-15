@@ -1,11 +1,12 @@
+<!-- 
+  Arquivo gerado automaticamente pelo PRAGMA.
+  Este código pode ser ajustado ou expandido de acordo com suas necessidades.
+-->
 <tce-container>
-  <tce-container-header
-    title="Configuração de Caminho do Projeto"
-  ></tce-container-header>
-
+  <tce-container-header title="Configuracao Estrutura Projeto"></tce-container-header>
   <main>
     <tce-table
-      id="tabela-configuracao-caminho"
+      [id]="'tabela-ConfiguracaoEstruturaProjeto'"
       (pageSizeChange)="pageSize = $event"
       (searchTermChange)="searchTerm = $event"
       (pageChange)="page = $event"
@@ -15,22 +16,15 @@
         <fa-icon icon="trash" class="ml-3 mr-1"></fa-icon> Excluir
       </div>
       <table
-        aria-describedby="Tabela para a listagem de Configuracao Caminhos"
+        aria-describedby="Tabela para a listagem de Configuracao Estrutura Projeto"
         content
         class="table table-striped text-center"
       >
         <thead>
           <tr>
             <th></th>
-            <th tceSortable="caminhoCliente" (sort)="onSort($event)">
-              Caminho do Projeto Cliente
-            </th>
-            <th tceSortable="caminhoApi" (sort)="onSort($event)">
-              Caminho do Projeto Api
-            </th>
-            <th tceSortable="dataInclusao" (sort)="onSort($event)">
-              Data de Inclusão
-            </th>
+            <th tceSortable="nomeEstrutura" (sort)="onSort($event)" >Estrutura do Projeto</th>
+            <th tceSortable="dataInclusao" (sort)="onSort($event)" >Data de Inclusão</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -41,7 +35,7 @@
                 | async
                 | paginate
                   : {
-                      id: 'tabela-configuracao-caminho',
+                      id: 'tabela-ConfiguracaoEstruturaProjeto',
                       itemsPerPage: pageSize,
                       currentPage: page,
                       totalItems: total$ | async
@@ -49,25 +43,26 @@
             "
           >
             <td></td>
-            <td>{{ item.caminhoCliente }}</td>
-            <td>{{ item.caminhoApi }}</td>
-            <td>{{ item.dataInclusao | date : "dd/MM/yyyy" }}</td>
+            <td>{{ item.nomeEstrutura }}</td>
+            <td>{{ item.dataInclusao | date: 'dd/MM/yyyy' }}</td>
             <td>
               <fa-icon
                 icon="edit"
                 tooltip="Editar"
-                [routerLink]="[item.idConfiguracaoCaminho, 'edit']"
+                [routerLink]="[item.idConfiguracaoEstrutura, 'edit']" 
               ></fa-icon>
               <fa-icon
                 icon="trash"
                 tooltip="Excluir"
                 class="ml-2"
-                (click)="deleteResource(item.idConfiguracaoCaminho)"
+                (click)="deleteResource(item.idConfiguracaoEstrutura)" 
               ></fa-icon>
             </td>
           </tr>
           <tr *ngIf="(resources$ | async)?.length == 0">
-            <td colspan="6">Nenhuma Configuração de Caminhos Encontrado.</td>
+            <td colspan="4">
+              Nenhum Configuracao Estrutura Projeto encontrado.
+            </td>
           </tr>
         </tbody>
       </table>

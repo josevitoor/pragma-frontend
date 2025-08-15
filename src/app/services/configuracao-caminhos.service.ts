@@ -23,11 +23,11 @@ export class ConfiguracaoCaminhosService extends BaseService<ConfiguracaoCaminho
   validateStructure(
     pathApi: string,
     pathClient: string,
-    routerPath: string
+    idEstruturaProjeto: string
   ): Promise<void> {
     return this.http
       .get<void>(
-        `${this.BASE_URL}/validate-structure?projectApiRootPath=${pathApi}&projectClientRootPath=${pathClient}&routerFilePath=${routerPath}`
+        `${this.BASE_URL}/validate-structure?projectApiRootPath=${pathApi}&projectClientRootPath=${pathClient}&idEstruturaProjeto=${idEstruturaProjeto}`
       )
       .toPromise();
   }

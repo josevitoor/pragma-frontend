@@ -22,10 +22,7 @@ export class ConfiguracaoCaminhosFormComponent
       idConfiguracaoCaminho: [null],
       caminhoApi: [null, [Validators.required, Validators.maxLength(500)]],
       caminhoCliente: [null, [Validators.required, Validators.maxLength(500)]],
-      caminhoArquivoRota: [
-        null,
-        [Validators.required, Validators.maxLength(500)],
-      ],
+      idConfiguracaoEstrutura: [null],
     });
 
     this.service = injector.get(ConfiguracaoCaminhosService);
@@ -50,10 +47,10 @@ export class ConfiguracaoCaminhosFormComponent
 
     const apiPath = this.resourceForm.get('caminhoApi')?.value;
     const clientPath = this.resourceForm.get('caminhoCliente')?.value;
-    const routerPath = this.resourceForm.get('caminhoArquivoRota')?.value;
+    const idEstrutura = this.resourceForm.get('idConfiguracaoEstrutura')?.value;
 
     try {
-      await this.service.validateStructure(apiPath, clientPath, routerPath);
+      await this.service.validateStructure(apiPath, clientPath, idEstrutura);
 
       Object.assign(
         this.resource,

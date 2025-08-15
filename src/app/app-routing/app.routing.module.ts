@@ -40,6 +40,13 @@ const routes: Routes = [
             (a) => a.ConfiguracaoModule
           ),
       },
+      {
+        path: 'configuracao-estrutura-projeto',
+        loadChildren: () =>
+          import(
+            'src/app/modulos/configuracaoEstruturaProjeto/configuracao-estrutura-projeto.module'
+          ).then((a) => a.ConfiguracaoEstruturaProjetoModule),
+      },
       { path: '404', component: PageNotFoundComponent },
       { path: '**', redirectTo: '404' },
     ],

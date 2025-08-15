@@ -19,7 +19,6 @@ export class ConfiguracaoCaminhosListComponent extends BaseResourceListComponent
     this.searchTermFields = {
       caminhoCliente: true,
       caminhoApi: true,
-      caminhoArquivoRota: true,
       dataInclusao: true,
     };
   }
