@@ -5,13 +5,15 @@ import { GenerateFilterType } from 'src/app/models/GenerateFilterType';
 import { InformationType } from 'src/app/models/InformationType';
 import { GenerateService } from 'src/app/services/generate.service';
 import { InformationService } from 'src/app/services/information.service';
-import { BaseResourceFormComponent } from 'tce-ng-lib';
+import { AlertsService, BaseResourceFormComponent } from 'tce-ng-lib';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { ConfiguracaoConexaoBancoModalComponent } from '../../configuracao/configuracao-conexao-banco-modal/configuracao-conexao-banco-modal.component';
 import { ConfiguracaoConexaoBancoType } from 'src/app/models/ConfiguracaoConexaoBancoType';
 import { ConfiguracaoCaminhosModalComponent } from '../../configuracao/configuracao-caminhos-modal/configuracao-caminhos-modal.component';
 import { ConfiguracaoCaminhosType } from 'src/app/models/ConfiguracaoCaminhosType';
 import { ConfiguracaoCaminhosService } from 'src/app/services/configuracao-caminhos.service';
+import { ConfiguracaoEstruturaProjetoType } from 'src/app/models/ConfiguracaoEstruturaProjetoType';
+import { ConfiguracaoEstruturaProjetoService } from 'src/app/services/configuracao-estrutura-projeto.service';
 
 @Component({
   selector: 'pragma-generate-form',
@@ -27,6 +29,7 @@ export class GenerateFormComponent
   tableNameList: string[] = [];
   tableColumnsFilterList: string[] = [];
   informations: InformationType[] = [];
+  configuracoesEstruturas: ConfiguracaoEstruturaProjetoType[];
 
   connectionForm: FormGroup;
   pathForm: FormGroup;
@@ -43,7 +46,9 @@ export class GenerateFormComponent
     private formBuilder: FormBuilder,
     private informationService: InformationService,
     private caminhosService: ConfiguracaoCaminhosService,
-    private bsModalService: BsModalService
+    private bsModalService: BsModalService,
+    private alert: AlertsService,
+    private configEstrutura: ConfiguracaoEstruturaProjetoService
   ) {
     super(new GenerateService(injector));
 
@@ -82,15 +87,7 @@ export class GenerateFormComponent
           Validators.maxLength(500),
         ],
       ],
-      routerPath: [
-        null,
-        [
-          Validators.required,
-          Validators.pattern(
-            /^[A-Z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*$/
-          ),
-        ],
-      ],
+      idConfiguracaoEstrutura: [null, [Validators.required]],
     });
 
     this.resourceForm = this.formBuilder.group({
@@ -134,6 +131,8 @@ export class GenerateFormComponent
     this.resourceForm.get('hasTceBase').valueChanges.subscribe((value) => {
       this.showTceBaseWarning = !value;
     });
+
+    this.configuracoesEstruturas = await this.configEstrutura.getAll().then();
   }
 
   private updateTableColumnsFormArray() {
@@ -189,10 +188,11 @@ export class GenerateFormComponent
       this.connectionCompleted = true;
       stepper.next();
     } catch (error) {
-      this.globalMessageService.errorMessages.next([
+      this.alert.error(
+        'Erro!',
         error?.error?.Erros[0] ??
-          `Erro ao conectar com banco de dados. Verifique se os dados informados estão corretos.`,
-      ]);
+          `Erro ao conectar com banco de dados. Verifique se os dados informados estão corretos.`
+      );
       this.connectionCompleted = false;
     }
   }
@@ -208,13 +208,13 @@ export class GenerateFormComponent
 
     const apiPath = this.pathForm.get('projectApiPath')?.value;
     const clientPath = this.pathForm.get('projectClientPath')?.value;
-    const routerPath = this.pathForm.get('routerPath')?.value;
+    const idEstrutura = this.pathForm.get('idConfiguracaoEstrutura')?.value;
 
     try {
       await this.caminhosService.validateStructure(
         apiPath,
         clientPath,
-        routerPath
+        idEstrutura
       );
 
       this.globalMessageService.successMessages.next([
@@ -223,10 +223,11 @@ export class GenerateFormComponent
       this.pathCompleted = true;
       stepper.next();
     } catch (error) {
-      this.globalMessageService.errorMessages.next([
+      this.alert.error(
+        'Erro!',
         error?.error?.Erros[0] ??
-          `O caminho informado não é válido para geração de arquivos`,
-      ]);
+          `O caminho informado não é válido para geração de arquivos`
+      );
       this.pathCompleted = false;
     }
   }
@@ -253,9 +254,9 @@ export class GenerateFormComponent
       generateBackendFilter: {
         projectApiPath: pathFormValues.projectApiPath,
       },
+      idConfiguracaoEstrutura: pathFormValues.idConfiguracaoEstrutura,
       generateFrontendFilter: {
         projectClientPath: pathFormValues.projectClientPath,
-        routerPath: pathFormValues.routerPath,
         tableColumnsList: this.tableColumnsFormArray
           .getRawValue()
           .map((item: any) => ({
@@ -280,9 +281,10 @@ export class GenerateFormComponent
         ]);
       });
     } catch (error) {
-      this.globalMessageService.errorMessages.next([
-        error?.error?.Erros[0] ?? `Erro ao gerar arquivos.`,
-      ]);
+      this.alert.error(
+        'Erro!',
+        error?.error?.Erros[0] ?? `Erro ao gerar arquivos.`
+      );
     }
   }
 
@@ -331,6 +333,9 @@ export class GenerateFormComponent
         this.pathForm
           .get('projectClientPath')
           ?.setValue(conexao?.caminhoCliente);
+        this.pathForm
+          .get('idConfiguracaoEstrutura')
+          ?.setValue(conexao?.idConfiguracaoEstrutura);
       }
     );
   }

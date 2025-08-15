@@ -46,6 +46,16 @@
                 [control]="resourceForm.get('apiConfigureMap')"
               ></tce-input-field>
             </div>
+            <div class="form-row mt-2">
+              <tce-input-field
+                class="col-6"
+                label="Contexts"
+                placeholder="Digite o caminho do arquivo Contexts"
+                type="text"
+                formControlName="apiContexts"
+                [control]="resourceForm.get('apiContexts')"
+              ></tce-input-field>
+            </div>
           </fieldset>
 
           <!-- Pastas API -->
@@ -53,7 +63,7 @@
             <legend>Pastas</legend>
             <div class="form-row mt-2">
               <tce-input-field
-                class="col-4"
+                class="col-6"
                 label="Controllers"
                 placeholder="Digite o caminho da pasta Controllers"
                 type="text"
@@ -61,33 +71,25 @@
                 [control]="resourceForm.get('apiControllers')"
               ></tce-input-field>
               <tce-input-field
-                class="col-4"
+                class="col-6"
                 label="Entities"
                 placeholder="Digite o caminho da pasta Entities"
                 type="text"
                 formControlName="apiEntities"
                 [control]="resourceForm.get('apiEntities')"
               ></tce-input-field>
+            </div>
+            <div class="form-row mt-2">
               <tce-input-field
-                class="col-4"
+                class="col-6"
                 label="Mapping"
                 placeholder="Digite o caminho da pasta Mapping"
                 type="text"
                 formControlName="apiMapping"
                 [control]="resourceForm.get('apiMapping')"
               ></tce-input-field>
-            </div>
-            <div class="form-row mt-2">
               <tce-input-field
-                class="col-4"
-                label="Contexts"
-                placeholder="Digite o caminho da pasta Contexts"
-                type="text"
-                formControlName="apiContexts"
-                [control]="resourceForm.get('apiContexts')"
-              ></tce-input-field>
-              <tce-input-field
-                class="col-4"
+                class="col-6"
                 label="Services"
                 placeholder="Digite o caminho da pasta Services"
                 type="text"

@@ -2,7 +2,6 @@ import { Component, Injector } from '@angular/core';
 import { ConfiguracaoEstruturaProjetoType } from 'src/app/models/ConfiguracaoEstruturaProjetoType';
 import { ConfiguracaoEstruturaProjetoService } from 'src/app/services/configuracao-estrutura-projeto.service';
 import { BaseResourceListComponent } from 'tce-ng-lib';
-import { FormBuilder } from '@angular/forms';
 
 @Component({
   selector: 'pragma-configuracao-estrutura-projeto-list',
@@ -23,5 +22,30 @@ export class ConfiguracaoEstruturaProjetoListComponent extends BaseResourceListC
 
   async ngOnInit(): Promise<void> {
     await super.ngOnInit();
+  }
+
+  /**
+   * Deleta recurso por id
+   */
+  async deleteItem(id: number) {
+    const { value } = await this.modalService.confirm(
+      'Tem certeza que deseja excluir essa configuração de estrutura de projeto? essa ação não poderá ser desfeita.',
+      ''
+    );
+
+    if (!value) return;
+
+    try {
+      await this.baseService.delete(id);
+
+      this.allResources = this.resources.filter(
+        (resource) => resource['idConfiguracaoEstrutura'] !== id
+      );
+    } catch (error) {
+      this.globalMessageService.errorMessages.next([
+        error?.error?.Erros[0] ??
+          `Erro ao excluir a configuração de estrutura de projeto`,
+      ]);
+    }
   }
 }

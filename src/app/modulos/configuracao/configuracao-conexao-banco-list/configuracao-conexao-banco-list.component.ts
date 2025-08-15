@@ -31,4 +31,28 @@ export class ConfiguracaoConexaoBancoListComponent
       .getAllWithPathAdicional('operador')
       .then();
   }
+
+  /**
+   * Deleta recurso por id
+   */
+  async deleteItem(id: number) {
+    const { value } = await this.modalService.confirm(
+      'Tem certeza que deseja excluir essa configuração de conexão? essa ação não poderá ser desfeita.',
+      ''
+    );
+
+    if (!value) return;
+
+    try {
+      await this.baseService.delete(id);
+
+      this.allResources = this.resources.filter(
+        (resource) => resource['idConfiguracaoConexaoBanco'] !== id
+      );
+    } catch (error) {
+      this.globalMessageService.errorMessages.next([
+        error?.error?.Erros[0] ?? `Erro ao excluir a configuração de conexão`,
+      ]);
+    }
+  }
 }

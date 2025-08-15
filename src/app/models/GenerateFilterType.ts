@@ -8,6 +8,7 @@ export type GenerateFilterType = {
   isServerSide: boolean;
   hasTceBase: boolean;
   tableColumnsFilter: Array<string>;
+  idConfiguracaoEstrutura: number;
   generateBackendFilter: GenerateBackendFilterType;
   generateFrontendFilter: GenerateFrontendFilterType;
   connectionFilter: ConnectionFilterType;

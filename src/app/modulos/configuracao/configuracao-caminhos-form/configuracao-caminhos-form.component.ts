@@ -4,7 +4,7 @@ import { ConfiguracaoCaminhosType } from 'src/app/models/ConfiguracaoCaminhosTyp
 import { ConfiguracaoEstruturaProjetoType } from 'src/app/models/ConfiguracaoEstruturaProjetoType';
 import { ConfiguracaoCaminhosService } from 'src/app/services/configuracao-caminhos.service';
 import { ConfiguracaoEstruturaProjetoService } from 'src/app/services/configuracao-estrutura-projeto.service';
-import { BaseResourceFormComponent } from 'tce-ng-lib';
+import { AlertsService, BaseResourceFormComponent } from 'tce-ng-lib';
 
 @Component({
   selector: 'pragma-configuracao-caminhos-form',
@@ -21,7 +21,8 @@ export class ConfiguracaoCaminhosFormComponent
   constructor(
     protected injector: Injector,
     private formBuilder: FormBuilder,
-    private estruturaService: ConfiguracaoEstruturaProjetoService
+    private estruturaService: ConfiguracaoEstruturaProjetoService,
+    private alert: AlertsService
   ) {
     super(new ConfiguracaoCaminhosService(injector));
 
@@ -66,10 +67,11 @@ export class ConfiguracaoCaminhosFormComponent
       );
       await this.submit();
     } catch (error) {
-      this.globalMessageService.errorMessages.next([
+      this.alert.error(
+        'Erro!',
         error?.error?.Erros[0] ??
-          `O caminho informado não é válido para geração de arquivos`,
-      ]);
+          `O caminho informado não é válido para geração de arquivos`
+      );
     }
   }
 }
