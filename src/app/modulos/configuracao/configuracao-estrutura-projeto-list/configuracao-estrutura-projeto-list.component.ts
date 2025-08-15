@@ -4,24 +4,20 @@ import { ConfiguracaoEstruturaProjetoService } from 'src/app/services/configurac
 import { BaseResourceListComponent } from 'tce-ng-lib';
 import { FormBuilder } from '@angular/forms';
 
-/* 
- * Arquivo gerado automaticamente pelo PRAGMA.
- * Este código pode ser ajustado ou expandido de acordo com suas necessidades.
- */
 @Component({
   selector: 'pragma-configuracao-estrutura-projeto-list',
-  templateUrl: './configuracao-estrutura-projeto-list.component.html'
+  templateUrl: './configuracao-estrutura-projeto-list.component.html',
 })
 export class ConfiguracaoEstruturaProjetoListComponent extends BaseResourceListComponent<ConfiguracaoEstruturaProjetoType> {
   service: ConfiguracaoEstruturaProjetoService;
 
-  constructor(protected injector: Injector, private formBuilder: FormBuilder) {
+  constructor(protected injector: Injector) {
     super(new ConfiguracaoEstruturaProjetoService(injector));
     this.service = injector.get(ConfiguracaoEstruturaProjetoService);
-    
+
     this.searchTermFields = {
       nomeEstrutura: true,
-      dataInclusao: true
+      dataInclusao: true,
     };
   }
 

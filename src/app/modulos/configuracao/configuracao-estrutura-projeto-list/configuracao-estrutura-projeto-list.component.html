@@ -1,9 +1,7 @@
-<!-- 
-  Arquivo gerado automaticamente pelo PRAGMA.
-  Este código pode ser ajustado ou expandido de acordo com suas necessidades.
--->
 <tce-container>
-  <tce-container-header title="Configuracao Estrutura Projeto"></tce-container-header>
+  <tce-container-header
+    title="Configuração de Estrutura do Projeto"
+  ></tce-container-header>
   <main>
     <tce-table
       [id]="'tabela-ConfiguracaoEstruturaProjeto'"
@@ -23,8 +21,12 @@
         <thead>
           <tr>
             <th></th>
-            <th tceSortable="nomeEstrutura" (sort)="onSort($event)" >Estrutura do Projeto</th>
-            <th tceSortable="dataInclusao" (sort)="onSort($event)" >Data de Inclusão</th>
+            <th tceSortable="nomeEstrutura" (sort)="onSort($event)">
+              Estrutura do Projeto
+            </th>
+            <th tceSortable="dataInclusao" (sort)="onSort($event)">
+              Data de Inclusão
+            </th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -44,18 +46,18 @@
           >
             <td></td>
             <td>{{ item.nomeEstrutura }}</td>
-            <td>{{ item.dataInclusao | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ item.dataInclusao | date : "dd/MM/yyyy" }}</td>
             <td>
               <fa-icon
                 icon="edit"
                 tooltip="Editar"
-                [routerLink]="[item.idConfiguracaoEstrutura, 'edit']" 
+                [routerLink]="[item.idConfiguracaoEstrutura, 'edit']"
               ></fa-icon>
               <fa-icon
                 icon="trash"
                 tooltip="Excluir"
                 class="ml-2"
-                (click)="deleteResource(item.idConfiguracaoEstrutura)" 
+                (click)="deleteResource(item.idConfiguracaoEstrutura)"
               ></fa-icon>
             </td>
           </tr>

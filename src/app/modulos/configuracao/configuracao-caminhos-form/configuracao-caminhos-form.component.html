@@ -28,6 +28,20 @@
             maxCaracteres="500"
           ></tce-input-field>
         </div>
+        <div class="form-row mt-2">
+          <div class="col-6">
+            <tce-select-field
+              label="Estrutura do Projeto"
+              [itemFillSelect]="configuracoesEstruturas"
+              formControlName="idConfiguracaoEstrutura"
+              bindLabelSelect="nomeEstrutura"
+              bindValueSelect="idConfiguracaoEstrutura"
+              placeholder="Selecione uma tabela"
+              [control]="resourceForm.get('idConfiguracaoEstrutura')"
+            >
+            </tce-select-field>
+          </div>
+        </div>
       </fieldset>
 
       <div class="mt-3">

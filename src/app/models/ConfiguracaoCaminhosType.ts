@@ -1,3 +1,5 @@
+import { ConfiguracaoEstruturaProjetoType } from './ConfiguracaoEstruturaProjetoType';
+
 export interface ConfiguracaoCaminhosType {
   idConfiguracaoCaminho: number;
   idConfiguracaoEstrutura: number;
@@ -6,4 +8,5 @@ export interface ConfiguracaoCaminhosType {
   dataInclusao: Date;
   idOperadorInclusao: number;
   idSessao: number;
+  configuracaoEstruturaProjeto: ConfiguracaoEstruturaProjetoType;
 }

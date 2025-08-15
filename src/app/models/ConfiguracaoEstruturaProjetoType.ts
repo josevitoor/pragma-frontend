@@ -15,4 +15,5 @@ export interface ConfiguracaoEstruturaProjetoType {
   dataInclusao: Date;
   idOperadorInclusao: number;
   idSessao: number;
+  clientArquivoRotas: string;
 }

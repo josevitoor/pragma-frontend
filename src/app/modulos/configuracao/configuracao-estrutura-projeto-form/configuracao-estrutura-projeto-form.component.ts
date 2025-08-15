@@ -4,13 +4,9 @@ import { ConfiguracaoEstruturaProjetoType } from 'src/app/models/ConfiguracaoEst
 import { ConfiguracaoEstruturaProjetoService } from 'src/app/services/configuracao-estrutura-projeto.service';
 import { BaseResourceFormComponent } from 'tce-ng-lib';
 
-/* 
- * Arquivo gerado automaticamente pelo PRAGMA.
- * Este código pode ser ajustado ou expandido de acordo com suas necessidades.
- */
 @Component({
   selector: 'pragma-configuracao-estrutura-projeto-form',
-  templateUrl: './configuracao-estrutura-projeto-form.component.html'
+  templateUrl: './configuracao-estrutura-projeto-form.component.html',
 })
 export class ConfiguracaoEstruturaProjetoFormComponent
   extends BaseResourceFormComponent<ConfiguracaoEstruturaProjetoType>
@@ -25,7 +21,10 @@ export class ConfiguracaoEstruturaProjetoFormComponent
     this.resourceForm = this.formBuilder.group({
       idConfiguracaoEstrutura: [null],
       nomeEstrutura: [null, [Validators.required, Validators.maxLength(100)]],
-      apiDependencyInjectionConfig: [null, [Validators.required, Validators.maxLength(500)]],
+      apiDependencyInjectionConfig: [
+        null,
+        [Validators.required, Validators.maxLength(500)],
+      ],
       apiConfigureMap: [null, [Validators.required, Validators.maxLength(500)]],
       apiControllers: [null, [Validators.required, Validators.maxLength(500)]],
       apiEntities: [null, [Validators.required, Validators.maxLength(500)]],
@@ -36,16 +35,17 @@ export class ConfiguracaoEstruturaProjetoFormComponent
       clientServices: [null, [Validators.required, Validators.maxLength(500)]],
       clientModels: [null, [Validators.required, Validators.maxLength(500)]],
       clientModulos: [null, [Validators.required, Validators.maxLength(500)]],
-      dataInclusao: [null, [Validators.required]],
-      idOperadorInclusao: [null, [Validators.required]],
-      idSessao: [null, [Validators.required]],
+      clientArquivoRotas: [
+        null,
+        [Validators.required, Validators.maxLength(500)],
+      ],
     });
 
     this.service = injector.get(ConfiguracaoEstruturaProjetoService);
     this.pageTitle =
       this.currentAction === 'new'
-        ? 'CADASTRAR CONFIGURACAO ESTRUTURA PROJETO'
-        : 'EDITAR CONFIGURACAO ESTRUTURA PROJETO';
+        ? 'CADASTRAR CONFIGURAÇÃO DA ESTRUTURA DO PROJETO'
+        : 'EDITAR CONFIGURAÇÃO DA ESTRUTURA DO PROJETO';
   }
 
   async ngOnInit(): Promise<void> {
