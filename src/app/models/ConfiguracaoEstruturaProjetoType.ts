@@ -8,9 +8,11 @@ export interface ConfiguracaoEstruturaProjetoType {
   apiMapping: string;
   apiContexts: string;
   apiServices: string;
-  apiImportBaseService: string;
+  apiImportInfraService: string;
+  apiImportInfraIService: string;
   apiImportUOW: string;
   apiImportPaginate: string;
+  apiImportPaginateConverter: string;
   clientServices: string;
   clientModels: string;
   clientModulos: string;

@@ -124,8 +124,17 @@
                 label="Importação BaseService"
                 placeholder="Digite a importação do BaseService"
                 type="text"
-                formControlName="apiImportBaseService"
-                [control]="resourceForm.get('apiImportBaseService')"
+                formControlName="apiImportInfraService"
+                [control]="resourceForm.get('apiImportInfraService')"
+                [isReadOnly]="!canEdit"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-4"
+                label="Importação Interface BaseService"
+                placeholder="Digite a importação da Interface BaseService"
+                type="text"
+                formControlName="apiImportInfraIService"
+                [control]="resourceForm.get('apiImportInfraIService')"
                 [isReadOnly]="!canEdit"
               ></tce-input-field>
               <tce-input-field
@@ -137,13 +146,24 @@
                 [control]="resourceForm.get('apiImportUOW')"
                 [isReadOnly]="!canEdit"
               ></tce-input-field>
+            </div>
+            <div class="form-row mt-2">
               <tce-input-field
-                class="col-4"
+                class="col-6"
                 label="Importação Paginate"
                 placeholder="Digite a importação do Paginate"
                 type="text"
                 formControlName="apiImportPaginate"
                 [control]="resourceForm.get('apiImportPaginate')"
+                [isReadOnly]="!canEdit"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-6"
+                label="Importação Paginate Converter"
+                placeholder="Digite a importação do Paginate Converter"
+                type="text"
+                formControlName="apiImportPaginateConverter"
+                [control]="resourceForm.get('apiImportPaginateConverter')"
                 [isReadOnly]="!canEdit"
               ></tce-input-field>
             </div>
