@@ -8,12 +8,13 @@ export interface ConfiguracaoEstruturaProjetoType {
   apiMapping: string;
   apiContexts: string;
   apiServices: string;
-  clientAppModule: string;
+  apiImportBaseService: string;
+  apiImportUOW: string;
+  apiImportPaginate: string;
   clientServices: string;
   clientModels: string;
   clientModulos: string;
   dataInclusao: Date;
   idOperadorInclusao: number;
-  idSessao: number;
   clientArquivoRotas: string;
 }

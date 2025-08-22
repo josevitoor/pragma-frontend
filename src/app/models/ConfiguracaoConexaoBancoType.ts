@@ -7,5 +7,4 @@ export type ConfiguracaoConexaoBancoType = {
   porta: number;
   dataInclusao: Date;
   idOperadorInclusao: number;
-  idSessao: number;
 };

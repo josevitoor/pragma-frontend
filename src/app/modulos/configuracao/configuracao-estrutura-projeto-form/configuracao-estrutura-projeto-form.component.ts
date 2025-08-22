@@ -14,30 +14,39 @@ export class ConfiguracaoEstruturaProjetoFormComponent
 {
   pageTitle: string;
   service: ConfiguracaoEstruturaProjetoService;
+  canEdit: boolean = false;
 
   constructor(protected injector: Injector, private formBuilder: FormBuilder) {
     super(new ConfiguracaoEstruturaProjetoService(injector));
 
     this.resourceForm = this.formBuilder.group({
       idConfiguracaoEstrutura: [null],
-      nomeEstrutura: [null, [Validators.required, Validators.maxLength(100)]],
+      nomeEstrutura: [null, [Validators.required, Validators.maxLength(50)]],
       apiDependencyInjectionConfig: [
         null,
-        [Validators.required, Validators.maxLength(500)],
+        [Validators.required, Validators.maxLength(100)],
       ],
-      apiConfigureMap: [null, [Validators.required, Validators.maxLength(500)]],
-      apiControllers: [null, [Validators.required, Validators.maxLength(500)]],
-      apiEntities: [null, [Validators.required, Validators.maxLength(500)]],
-      apiMapping: [null, [Validators.required, Validators.maxLength(500)]],
-      apiContexts: [null, [Validators.required, Validators.maxLength(500)]],
-      apiServices: [null, [Validators.required, Validators.maxLength(500)]],
-      clientAppModule: [null, [Validators.required, Validators.maxLength(500)]],
-      clientServices: [null, [Validators.required, Validators.maxLength(500)]],
-      clientModels: [null, [Validators.required, Validators.maxLength(500)]],
-      clientModulos: [null, [Validators.required, Validators.maxLength(500)]],
+      apiConfigureMap: [null, [Validators.required, Validators.maxLength(100)]],
+      apiControllers: [null, [Validators.required, Validators.maxLength(100)]],
+      apiEntities: [null, [Validators.required, Validators.maxLength(100)]],
+      apiMapping: [null, [Validators.required, Validators.maxLength(100)]],
+      apiContexts: [null, [Validators.required, Validators.maxLength(100)]],
+      apiServices: [null, [Validators.required, Validators.maxLength(100)]],
+      apiImportBaseService: [
+        null,
+        [Validators.required, Validators.maxLength(50)],
+      ],
+      apiImportUOW: [null, [Validators.required, Validators.maxLength(50)]],
+      apiImportPaginate: [
+        null,
+        [Validators.required, Validators.maxLength(50)],
+      ],
+      clientServices: [null, [Validators.required, Validators.maxLength(100)]],
+      clientModels: [null, [Validators.required, Validators.maxLength(100)]],
+      clientModulos: [null, [Validators.required, Validators.maxLength(100)]],
       clientArquivoRotas: [
         null,
-        [Validators.required, Validators.maxLength(500)],
+        [Validators.required, Validators.maxLength(100)],
       ],
     });
 
@@ -50,5 +59,12 @@ export class ConfiguracaoEstruturaProjetoFormComponent
 
   async ngOnInit(): Promise<void> {
     await super.ngOnInit();
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (
+      this.currentAction === 'new' ||
+      this.resource.idOperadorInclusao == currentUser?.idOperador
+    ) {
+      this.canEdit = true;
+    }
   }
 }

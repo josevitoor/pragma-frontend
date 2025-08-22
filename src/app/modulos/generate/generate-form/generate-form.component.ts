@@ -54,7 +54,7 @@ export class GenerateFormComponent
 
     this.service = injector.get(GenerateService);
     this.service.customMessageSuccess =
-      'Arquivos de código CRUD gerados com sucesso!';
+      'Arquivos de código CRUD gerados com sucesso! Para visualizar o resultado confira o projeto de destino.';
     this.informationService.customMessageSuccess =
       'Conexão com banco de dados realizada com sucesso!';
 

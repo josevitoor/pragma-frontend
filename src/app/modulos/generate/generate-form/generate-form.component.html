@@ -76,7 +76,7 @@
               class="btn btn-primary mb-2 w-sm-auto"
               (click)="openModalConfiguracaoConexaoBanco()"
             >
-              SELECIONAR CONEXÃO
+              SELECIONAR CONEXÃO PREESTABELECIDA
             </button>
 
             <button
@@ -142,7 +142,7 @@
                 class="btn btn-primary w-auto mb-2 mb-sm-0 ml-3"
                 (click)="openModalConfiguracaoCaminho()"
               >
-                SELECIONAR CAMINHO
+                SELECIONAR CAMINHO PREESTABELECIDO
               </button>
             </div>
             <button
@@ -245,10 +245,9 @@
               class="alert alert-warning mt-2"
               role="alert"
             >
-              <strong>Atenção:</strong> Caso o projeto não utilize biblioteca
-              TCE Base, que é o padrão atual, pode ser necessário ajustar alguns
-              imports de infraestrutura nos serviços gerados, pois eles são
-              específicos do projeto e não da biblioteca.
+              <strong>Atenção:</strong> Caso o projeto não utilize a biblioteca
+              TCE Base (padrão atual), poderá ser necessário ajustar manualmente
+              alguns imports de infraestrutura nos serviços gerados.
             </div>
             <div class="form-row mt-2">
               <div

@@ -7,6 +7,5 @@ export interface ConfiguracaoCaminhosType {
   caminhoCliente: string;
   dataInclusao: Date;
   idOperadorInclusao: number;
-  idSessao: number;
   configuracaoEstruturaProjeto: ConfiguracaoEstruturaProjetoType;
 }
