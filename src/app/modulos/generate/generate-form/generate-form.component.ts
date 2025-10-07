@@ -54,7 +54,7 @@ export class GenerateFormComponent
 
     this.service = injector.get(GenerateService);
     this.service.customMessageSuccess =
-      'Arquivos de código CRUD gerados com sucesso! Para visualizar o resultado confira o projeto de destino.';
+      'CRUD gerado com sucesso! Os arquivos de código foram criados no diretório de destino. Para visualizar a tela, cadastre as permissões correspondentes no módulo TCE-Admin e execute o projeto.';
     this.informationService.customMessageSuccess =
       'Conexão com banco de dados realizada com sucesso!';
 

@@ -14,8 +14,9 @@
     "@angular/platform-browser": "^9.1.11",
     "@angular/platform-browser-dynamic": "^9.1.11",
     "@angular/router": "^9.1.11",
-    "tce-ng-lib": "2.10.59",
+    "pdfjs-dist": "^2.6.347",
     "rxjs": "^6.5.4",
+    "tce-ng-lib": "^2.34.0",
     "web-pki": "^2.16.3",
     "zone.js": "^0.10.2"
   },
