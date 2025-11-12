@@ -34,7 +34,7 @@ export class ConfiguracaoEstruturaProjetoFormComponent
       apiServices: [null, [Validators.required, Validators.maxLength(100)]],
       apiImportInfraService: [null, [Validators.maxLength(50)]],
       apiImportInfraIService: [null, [Validators.maxLength(50)]],
-      apiImportUOW: [null, [Validators.required, Validators.maxLength(50)]],
+      apiImportUOW: [null, [Validators.maxLength(50)]],
       apiImportPaginate: [null, [Validators.maxLength(50)]],
       apiImportPaginateConverter: [null, [Validators.maxLength(50)]],
       clientServices: [null, [Validators.required, Validators.maxLength(100)]],
