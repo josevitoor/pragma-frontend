@@ -96,6 +96,7 @@ export class GenerateFormComponent
       tableColumnsFilter: [{ value: [], disabled: true }],
       isServerSide: [false],
       hasTceBase: [true],
+      hasApiVersion: [false],
       tableColumnsList: [{ value: [], disabled: true }, Validators.required],
       tableColumnsFormArray: this.formBuilder.array([]),
     });
@@ -250,6 +251,7 @@ export class GenerateFormComponent
       entityName: generateFormValues.entityName,
       isServerSide: generateFormValues.isServerSide,
       hasTceBase: generateFormValues.hasTceBase,
+      hasApiVersion: generateFormValues.hasApiVersion,
       tableColumnsFilter: generateFormValues.tableColumnsFilter,
       generateBackendFilter: {
         projectApiPath: pathFormValues.projectApiPath,

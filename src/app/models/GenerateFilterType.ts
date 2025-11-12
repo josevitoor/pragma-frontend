@@ -7,6 +7,7 @@ export type GenerateFilterType = {
   entityName: string;
   isServerSide: boolean;
   hasTceBase: boolean;
+  hasApiVersion: boolean;
   tableColumnsFilter: Array<string>;
   idConfiguracaoEstrutura: number;
   generateBackendFilter: GenerateBackendFilterType;
