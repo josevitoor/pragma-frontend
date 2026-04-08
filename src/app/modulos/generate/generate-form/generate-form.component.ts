@@ -14,6 +14,8 @@ import { ConfiguracaoCaminhosType } from 'src/app/models/ConfiguracaoCaminhosTyp
 import { ConfiguracaoCaminhosService } from 'src/app/services/configuracao-caminhos.service';
 import { ConfiguracaoEstruturaProjetoType } from 'src/app/models/ConfiguracaoEstruturaProjetoType';
 import { ConfiguracaoEstruturaProjetoService } from 'src/app/services/configuracao-estrutura-projeto.service';
+import * as go from 'gojs';
+import { links, nodes } from 'src/app/constants/InitialModel';
 
 @Component({
   selector: 'pragma-generate-form',
@@ -29,7 +31,7 @@ export class GenerateFormComponent
   tableNameList: string[] = [];
   tableColumnsFilterList: string[] = [];
   informations: InformationType[] = [];
-  configuracoesEstruturas: ConfiguracaoEstruturaProjetoType[];
+  configuracoesEstruturas!: ConfiguracaoEstruturaProjetoType[];
 
   connectionForm: FormGroup;
   pathForm: FormGroup;
@@ -39,7 +41,11 @@ export class GenerateFormComponent
 
   showTceBaseWarning = false;
 
-  modalRef: BsModalRef;
+  modalRef!: BsModalRef;
+
+  diagram!: go.Diagram;
+  nodes = nodes;
+  links = links;
 
   constructor(
     protected injector: Injector,
@@ -99,24 +105,25 @@ export class GenerateFormComponent
       hasApiVersion: [false],
       tableColumnsList: [{ value: [], disabled: true }, Validators.required],
       tableColumnsFormArray: this.formBuilder.array([]),
+      erEditor: [false]
     });
   }
 
   async ngOnInit(): Promise<void> {
     await super.ngOnInit();
 
-    this.resourceForm.get('tableName').valueChanges.subscribe(async (value) => {
+    this.resourceForm.get('tableName')?.valueChanges.subscribe(async (value) => {
       if (value) {
-        this.resourceForm.get('tableColumnsFilter').enable();
-        this.resourceForm.get('tableColumnsList').enable();
-        this.resourceForm.get('tableColumnsFilter').setValue([]);
-        this.resourceForm.get('tableColumnsList').setValue([]);
+        this.resourceForm.get('tableColumnsFilter')?.enable();
+        this.resourceForm.get('tableColumnsList')?.enable();
+        this.resourceForm.get('tableColumnsFilter')?.setValue([]);
+        this.resourceForm.get('tableColumnsList')?.setValue([]);
         this.tableColumnsFilterList = this.informations
           .filter((item) => item.tableName === value)
           .map((item) => item.columnName);
       } else {
-        this.resourceForm.get('tableColumnsFilter').disable();
-        this.resourceForm.get('tableColumnsList').disable();
+        this.resourceForm.get('tableColumnsFilter')?.disable();
+        this.resourceForm.get('tableColumnsList')?.disable();
         this.tableColumnsFilterList = [];
       }
     });
@@ -129,11 +136,19 @@ export class GenerateFormComponent
       .get('tableColumnsList')
       ?.valueChanges.subscribe(() => this.updateTableColumnsFormArray());
 
-    this.resourceForm.get('hasTceBase').valueChanges.subscribe((value) => {
+    this.resourceForm.get('hasTceBase')?.valueChanges.subscribe((value) => {
       this.showTceBaseWarning = !value;
     });
 
     this.configuracoesEstruturas = await this.configEstrutura.getAll().then();
+
+    this.resourceForm.get('erEditor')?.valueChanges.subscribe(value => {
+      if (value) {
+        setTimeout(() => {
+          this.initDiagram();
+        }, 0);
+      }
+    });
   }
 
   private updateTableColumnsFormArray() {
@@ -350,5 +365,243 @@ export class GenerateFormComponent
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, (str) => str.toUpperCase())
       .trim();
+  }
+
+  /**
+   * Inicializa o diagrama de ER utilizando a biblioteca GoJS
+   */
+  initDiagram() {
+    const $ = go.GraphObject.make;
+
+    this.diagram = $(go.Diagram, 'diagramDiv', {
+      'undoManager.isEnabled': true,
+      linkingTool: $(go.LinkingTool),
+      relinkingTool: $(go.RelinkingTool)
+    });
+
+    this.diagram.nodeTemplate =
+    $(go.Node, "Auto",
+      $(go.Shape, "RoundedRectangle",
+        { fill: "#fff", stroke: "#3C7B6C", strokeWidth: 2 }
+      ),
+
+      $(go.Panel, "Vertical",
+
+        // Titulo da tabela
+        $(go.Panel, "Auto",
+          { stretch: go.GraphObject.Horizontal },
+          $(go.Shape, { fill: "#3C7B6C", stroke: null }),
+          $(go.TextBlock,
+            {
+              margin: 6,
+              stroke: "white",
+              font: "bold 13px sans-serif",
+              editable: true
+            },
+            new go.Binding("text", "key").makeTwoWay()
+          )
+        ),
+
+        // Colunas
+        $(go.Panel, "Table",
+          {
+            padding: 4,
+            defaultAlignment: go.Spot.Left
+          },
+          new go.Binding("itemArray", "columns"),
+
+          {
+            itemTemplate:
+              $(go.Panel, "TableRow",
+                {
+                  fromLinkable: true,
+                  toLinkable: true,
+                  cursor: "pointer",
+                  portId: ""
+                },
+                new go.Binding("portId", "name"),
+                // Nome da coluna
+                $(go.TextBlock,
+                  {
+                    column: 0,
+                    margin: 2,
+                    editable: true,
+                    width: 110
+                  },
+                  new go.Binding("text", "name").makeTwoWay(),
+                ),
+
+                // Tipo da coluna
+                $(go.TextBlock,
+                  {
+                    column: 1,
+                    margin: 2,
+                    width: 90,
+                    editable: true
+                  },
+                  new go.Binding("text", "type").makeTwoWay()
+                ),
+
+                // PK
+                $("Button",
+                  {
+                    column: 2,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
+
+                      if (data && item) {
+                        this.diagram.model.startTransaction("toggle pk");
+                        item.pk = !item.pk;
+                        this.diagram.model.updateTargetBindings(data);
+                        this.diagram.model.commitTransaction("toggle pk");
+                      }
+                    }
+                  },
+                  $(go.TextBlock,
+                    new go.Binding("text", "pk", v => v ? "PK" : "-")
+                  )
+                ),
+
+                // FK
+                $("Button",
+                  {
+                    column: 3,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
+
+                      if (data && item) {
+                        this.diagram.model.startTransaction("toggle fk");
+                        item.fk = !item.fk;
+                        this.diagram.model.updateTargetBindings(data);
+                        this.diagram.model.commitTransaction("toggle fk");
+                      }
+                    }
+                  },
+                  $(go.TextBlock,
+                    new go.Binding("text", "fk", v => v ? "FK" : "-")
+                  )
+                )
+              )
+          }
+        ),
+
+        // Adicionar coluna
+        $("Button",
+          {
+            margin: 5,
+            click: (e, obj) => {
+              const node = obj.part?.data;
+              this.addColumn(node);
+            }
+          },
+          $(go.TextBlock, "adicionar coluna")
+        )
+      )
+    );
+
+    this.diagram.linkTemplate =
+    $(go.Link,
+      {
+        routing: go.Link.AvoidsNodes,
+        corner: 5
+      },
+      $(go.Shape,
+        { strokeWidth: 2, stroke: "#555" }
+      )
+    );
+
+    // Validação para evitar criação de links duplicados e garantir que o destino seja uma PK
+    this.diagram.toolManager.linkingTool.linkValidation = (fromNode, fromPort, toNode, toPort) => {
+      const model = this.diagram.model as go.GraphLinksModel;
+      const links = model.linkDataArray;
+
+      const fromTable = fromNode.data;
+      const toTable = toNode.data;
+
+      const fromColumn = fromTable.columns?.find((c: any) => c.name === fromPort.portId);
+      const toColumn = toTable.columns?.find((c: any) => c.name === toPort.portId);
+
+      if (!fromColumn || !toColumn) return false;
+
+      if (!toColumn.pk) return false;
+
+      const exists = links.some((l: any) =>
+        l.from === fromTable.key &&
+        l.to === toTable.key
+      );
+
+      if (exists) return false;
+
+      return true;
+    };
+
+    // Listener para marcar coluna como FK ao criar um link
+    this.diagram.addDiagramListener("LinkDrawn", (e) => {
+      const link = e.subject;
+      const fromNode = link.fromNode.data;
+      const fromColumnName = link.data.fromColumn;
+
+      this.diagram.model.startTransaction("set fk");
+
+      const fromColumn = fromNode.columns?.find((c: any) => c.name === fromColumnName);
+
+      if (fromColumn) {
+        fromColumn.fk = true;
+      }
+
+      this.diagram.model.updateTargetBindings(fromNode);
+
+      this.diagram.model.commitTransaction("set fk");
+    });
+
+    const model = new go.GraphLinksModel(this.nodes, this.links);
+    model.linkFromPortIdProperty = "fromColumn";
+    model.linkToPortIdProperty = "toColumn";
+    this.diagram.model = model;
+  }
+
+  /**
+   * Adiciona nova tabela ao diagrama
+   */
+  addTable() {
+    this.diagram.model.addNodeData({
+      key: 'TabelaNova',
+      columns: [
+        { name: 'Id', type: 'int', pk: true, fk: false }
+      ]
+    });
+  }
+
+  /**
+   * Adiciona uma nova coluna a uma tabela existente
+   */
+  addColumn(node: any) {
+
+    this.diagram.model.startTransaction("add column");
+
+    if (!node.columns) node.columns = [];
+
+    node.columns.push({
+      name: "CampoNovo",
+      type: "int",
+      pk: false,
+      fk: false
+    });
+
+    this.diagram.model.updateTargetBindings(node);
+
+    this.diagram.model.commitTransaction("add column");
+  }
+
+  getModel() {
+    return this.diagram.model.toJson();
+  }
+
+  loadModel(json: string) {
+    this.diagram.model = go.Model.fromJson(json);
   }
 }
