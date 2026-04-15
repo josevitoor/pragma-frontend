@@ -105,7 +105,8 @@ export class GenerateFormComponent
       hasApiVersion: [false],
       tableColumnsList: [{ value: [], disabled: true }, Validators.required],
       tableColumnsFormArray: this.formBuilder.array([]),
-      erEditor: [false]
+      erEditor: [false],
+      erTables: this.formBuilder.array([]) 
     });
   }
 
@@ -144,9 +145,28 @@ export class GenerateFormComponent
 
     this.resourceForm.get('erEditor')?.valueChanges.subscribe(value => {
       if (value) {
+        this.resourceForm.get('tableName')?.clearValidators();
+        this.resourceForm.get('entityName')?.clearValidators();
+        this.resourceForm.get('tableColumnsList')?.clearValidators();
+
+        this.resourceForm.get('tableName')?.updateValueAndValidity();
+        this.resourceForm.get('entityName')?.updateValueAndValidity();
+        this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
+
         setTimeout(() => {
           this.initDiagram();
+          this.buildErTables();
         }, 0);
+      } else {
+        (this.resourceForm.get('erTables') as FormArray).clear();
+
+        this.resourceForm.get('tableName')?.setValidators([Validators.required]);
+        this.resourceForm.get('entityName')?.setValidators([Validators.required]);
+        this.resourceForm.get('tableColumnsList')?.setValidators([Validators.required]);
+
+        this.resourceForm.get('tableName')?.updateValueAndValidity();
+        this.resourceForm.get('entityName')?.updateValueAndValidity();
+        this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
       }
     });
   }
@@ -206,7 +226,7 @@ export class GenerateFormComponent
     } catch (error) {
       this.alert.error(
         'Erro!',
-        error?.error?.Erros[0] ??
+        (error as any)?.error?.Erros[0] ??
           `Erro ao conectar com banco de dados. Verifique se os dados informados estão corretos.`
       );
       this.connectionCompleted = false;
@@ -241,7 +261,7 @@ export class GenerateFormComponent
     } catch (error) {
       this.alert.error(
         'Erro!',
-        error?.error?.Erros[0] ??
+        (error as any)?.error?.Erros[0] ??
           `O caminho informado não é válido para geração de arquivos`
       );
       this.pathCompleted = false;
@@ -300,7 +320,7 @@ export class GenerateFormComponent
     } catch (error) {
       this.alert.error(
         'Erro!',
-        error?.error?.Erros[0] ?? `Erro ao gerar arquivos.`
+        (error as any)?.error?.Erros[0] ?? `Erro ao gerar arquivos.`
       );
     }
   }
@@ -365,6 +385,74 @@ export class GenerateFormComponent
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, (str) => str.toUpperCase())
       .trim();
+  }
+
+  buildErTables() {
+    const nodes = this.diagram.model.nodeDataArray;
+    const erTables = this.resourceForm.get('erTables') as FormArray;
+
+    erTables.clear();
+
+    nodes.forEach((table: any, index: number) => {
+
+      const group = this.formBuilder.group({
+        tableName: [table.key],
+        entityName: [table.key, Validators.required],
+        tableColumnsList: [[]],
+        tableColumnsFilter: [[]],
+        columnsOptions: [table.columns.map((col: any) => ({
+          label: col.name,
+          value: col.name
+        }))],
+        tableColumnsFormArray: this.formBuilder.array([])
+      });
+
+      group.get('tableColumnsList')?.valueChanges.subscribe(() => {
+        this.updateErTableColumnsFormArray(index);
+      });
+
+      group.get('tableColumnsFilter')?.valueChanges.subscribe(() => {
+        this.updateErTableColumnsFormArray(index);
+      });
+
+      erTables.push(group);
+    });
+  }
+
+  updateErTableColumnsFormArray(index: number) {
+    const erTables = this.resourceForm.get('erTables') as FormArray;
+    const tableGroup = erTables.at(index);
+
+    const filterColumns = tableGroup.get('tableColumnsFilter')?.value || [];
+    const listColumns = tableGroup.get('tableColumnsList')?.value || [];
+
+    const allSelectedColumns = Array.from(
+      new Set([...filterColumns, ...listColumns])
+    );
+
+    const formArray = tableGroup.get('tableColumnsFormArray') as FormArray;
+
+    formArray.clear();
+
+    allSelectedColumns.forEach((column) => {
+      formArray.push(
+        this.formBuilder.group({
+          databaseColumn: [{ value: column, disabled: true }],
+          displayName: [this.formatLabel(column)]
+        })
+      );
+    });
+  }
+
+  getColumnsFromEr(index: number) {
+    const table = (this.resourceForm.get('erTables') as FormArray).at(index);
+
+    const cols = table.get('tableColumnsFormArray')?.value || [];
+
+    return cols.map((c: any) => ({
+      label: c.databaseColumn,
+      value: c.databaseColumn
+    }));
   }
 
   /**
@@ -484,6 +572,31 @@ export class GenerateFormComponent
                   $(go.TextBlock,
                     new go.Binding("text", "fk", v => v ? "FK" : "-")
                   )
+                ),
+
+                // DELETE
+                $("Button",
+                  {
+                    column: 4,
+                    width: 35,
+                    click: (e, obj) => {
+                      const node = obj.part?.data;
+                      const column = obj.panel?.data;
+                      if (!node || !column) return;
+
+                      const model = this.diagram.model as go.GraphLinksModel;
+                      this.diagram.model.startTransaction("remove column");
+                      const linksToRemove = model.linkDataArray.filter((l: any) =>
+                        (l.from === node.key && l.fromColumn === column.name) ||
+                        (l.to === node.key && l.toColumn === column.name)
+                      );
+
+                      linksToRemove.forEach((l: any) => model.removeLinkData(l));
+                      model.removeArrayItem(node.columns, node.columns.indexOf(column));
+                      this.diagram.model.commitTransaction("remove column");
+                    }
+                  },
+                  $(go.TextBlock, "🗑")
                 )
               )
           }
@@ -558,6 +671,16 @@ export class GenerateFormComponent
       this.diagram.model.commitTransaction("set fk");
     });
 
+    // Listener para sincronizar o formulário com o diagrama
+    this.diagram.addModelChangedListener((e) => {
+      if (e.isTransactionFinished) {
+        const isEr = this.resourceForm.get('erEditor')?.value;
+        if (isEr) {
+          this.syncErFormWithDiagram();
+        }
+      }
+    });
+
     const model = new go.GraphLinksModel(this.nodes, this.links);
     model.linkFromPortIdProperty = "fromColumn";
     model.linkToPortIdProperty = "toColumn";
@@ -597,11 +720,141 @@ export class GenerateFormComponent
     this.diagram.model.commitTransaction("add column");
   }
 
-  getModel() {
-    return this.diagram.model.toJson();
+  /**
+   * Salvar o diagrama em formato JSON para posterior edição ou geração de arquivos a partir do modelo criado
+   */
+  exportDiagram() {
+    const json = this.diagram.model.toJson();
+
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diagrama-er.json';
+    a.click();
+
+    window.URL.revokeObjectURL(url);
   }
 
-  loadModel(json: string) {
-    this.diagram.model = go.Model.fromJson(json);
+  /**
+   * Importa um diagrama em formato JSON
+   */
+  importDiagram(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e: any) => {
+      const json = e.target.result;
+
+      const model = go.Model.fromJson(json) as go.GraphLinksModel;
+
+      model.linkFromPortIdProperty = "fromColumn";
+      model.linkToPortIdProperty = "toColumn";
+
+      this.diagram.model = model;
+    };
+
+    reader.readAsText(file);
+  }
+
+  /**
+   * Sincroniza o formulário de ER com o modelo do diagrama
+   */
+  syncErFormWithDiagram() {
+    const model = this.diagram.model as go.GraphLinksModel;
+    const nodes = model.nodeDataArray;
+
+    const erTables = this.resourceForm.get('erTables') as FormArray;
+    nodes.forEach((node: any) => {
+      let tableForm = erTables.controls.find(
+        (t: any) => t.get('tableName')?.value === node.key
+      );
+
+      if (!tableForm) {
+        this.addErTable(node);
+        return;
+      }
+
+      this.syncColumns(tableForm, node.columns);
+    });
+
+    for (let i = erTables.length - 1; i >= 0; i--) {
+      const tableName = erTables.at(i).get('tableName')?.value;
+
+      const exists = nodes.some((n: any) => n.key === tableName);
+
+      if (!exists) {
+        erTables.removeAt(i);
+      }
+    }
+  }
+
+  /**
+   * Sincroniza as colunas de uma tabela do formulário de ER com as colunas do diagrama
+   */
+  syncColumns(tableForm: any, diagramColumns: any[]) {
+    const formArray = tableForm.get('tableColumnsFormArray') as FormArray;
+    const existing = formArray.value;
+
+    const selected = [
+      ...(tableForm.get('tableColumnsList')?.value || []),
+      ...(tableForm.get('tableColumnsFilter')?.value || [])
+    ];;
+
+    formArray.clear();
+
+    selected.forEach((colName: string) => {
+      const existsInDiagram = diagramColumns.some((c: any) => c.name === colName);
+      if (!existsInDiagram) return;
+
+      const old = existing.find((c: any) => c.databaseColumn === colName);
+      formArray.push(
+        this.formBuilder.group({
+          databaseColumn: [{ value: colName, disabled: true }],
+          displayName: [old?.displayName || this.formatLabel(colName)]
+        })
+      );
+    });
+
+    const newOptions = diagramColumns.map((c: any) => ({
+      label: c.name,
+      value: c.name
+    }));
+
+    tableForm.get('columnsOptions')?.setValue(newOptions, { emitEvent: false });
+  }
+
+  /**
+   * Adiciona uma nova tabela ao formulário de ER com base em um nó do diagrama
+   */
+  addErTable(node: any) {
+    const erTables = this.resourceForm.get('erTables') as FormArray;
+
+    const group = this.formBuilder.group({
+      tableName: [node.key],
+      entityName: [node.key, Validators.required],
+      tableColumnsList: [[]],
+      tableColumnsFilter: [[]],
+      columnsOptions: [node.columns.map((c: any) => ({
+        label: c.name,
+        value: c.name
+      }))],
+      tableColumnsFormArray: this.formBuilder.array([])
+    });
+
+    const index = erTables.length;
+
+    group.get('tableColumnsList')?.valueChanges.subscribe(() => {
+      this.updateErTableColumnsFormArray(index);
+    });
+
+    group.get('tableColumnsFilter')?.valueChanges.subscribe(() => {
+      this.updateErTableColumnsFormArray(index);
+    });
+
+    erTables.push(group);
   }
 }
