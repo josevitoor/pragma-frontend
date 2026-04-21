@@ -247,6 +247,10 @@
                     </button>
                     <input type="file" #fileInput hidden accept=".json" (change)="importDiagram($event)" />
 
+                    <button class="btn btn-warning ml-2" (click)="gerarSqlPreview()">
+                      Gerar SQL
+                    </button>
+
                     <button class="btn btn-primary ml-2" (click)="addTable()">
                       Adicionar tabela
                     </button>

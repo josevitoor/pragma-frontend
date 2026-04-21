@@ -2,16 +2,16 @@ export const nodes = [
   {
     key: 'Usuario',
     columns: [
-      { name: 'Id', type: 'int', pk: true, fk: false },
-      { name: 'Nome', type: 'varchar(150)', pk: false, fk: false }
+      { name: 'Id', type: 'INT', pk: true, fk: false, nn: true, uq: false, ai: true },
+      { name: 'Nome', type: 'VARCHAR(150)', pk: false, fk: false, nn: true, uq: false, ai: false }
     ]
   },
   {
     key: 'Pedido',
     columns: [
-      { name: 'Id', type: 'int', pk: true, fk: false },
-      { name: 'Nome', type: 'varchar(150)', pk: false, fk: false },
-      { name: 'UsuarioId', type: 'varchar(150)', pk: false, fk: true }
+      { name: 'Id', type: 'INT', pk: true, fk: false, nn: true, uq: false, ai: true },
+      { name: 'Nome', type: 'VARCHAR(150)', pk: false, fk: false, nn: true, uq: false, ai: false },
+      { name: 'UsuarioId', type: 'VARCHAR(150)', pk: false, fk: true, nn: false, uq: false, ai: false }
     ]
   }
 ];

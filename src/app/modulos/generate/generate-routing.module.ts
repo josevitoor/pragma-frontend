@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { GenerateFormComponent } from './generate-form/generate-form.component';
+import { ModelagemErFormComponent } from './modalgem-er-form/modelagem-er-form.component';
 
 const routes: Routes = [
   {
@@ -10,6 +11,17 @@ const routes: Routes = [
       {
         path: '',
         component: GenerateFormComponent,
+        data: { breadcrumb: '' },
+      },
+    ],
+  },
+  {
+    path: 'modelagem-er',
+    data: { breadcrumb: 'Modelagem Entidade-Relacionamento' },
+    children: [
+      {
+        path: '',
+        component: ModelagemErFormComponent,
         data: { breadcrumb: '' },
       },
     ],

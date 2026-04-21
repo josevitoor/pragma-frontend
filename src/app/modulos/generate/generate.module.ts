@@ -7,9 +7,10 @@ import { GenerateRoutingModule } from './generate-routing.module';
 import { GenerateFormComponent } from './generate-form/generate-form.component';
 import { MatStepperModule } from '@angular/material/stepper';
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { ModelagemErFormComponent } from './modalgem-er-form/modelagem-er-form.component';
 
 @NgModule({
-  declarations: [GenerateFormComponent],
+  declarations: [GenerateFormComponent, ModelagemErFormComponent],
   imports: [
     CommonModule,
     KubernetesModule,

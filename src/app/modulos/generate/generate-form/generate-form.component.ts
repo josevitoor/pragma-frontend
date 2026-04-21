@@ -16,6 +16,7 @@ import { ConfiguracaoEstruturaProjetoType } from 'src/app/models/ConfiguracaoEst
 import { ConfiguracaoEstruturaProjetoService } from 'src/app/services/configuracao-estrutura-projeto.service';
 import * as go from 'gojs';
 import { links, nodes } from 'src/app/constants/InitialModel';
+import { GenerateSqlRequest, LinkDto, TableDto } from 'src/app/models/GenerateSqlType';
 
 @Component({
   selector: 'pragma-generate-form',
@@ -46,6 +47,8 @@ export class GenerateFormComponent
   diagram!: go.Diagram;
   nodes = nodes;
   links = links;
+
+  sqlGerado: string | null = null;
 
   constructor(
     protected injector: Injector,
@@ -508,25 +511,16 @@ export class GenerateFormComponent
                   portId: ""
                 },
                 new go.Binding("portId", "name"),
-                // Nome da coluna
+
+                // Nome
                 $(go.TextBlock,
-                  {
-                    column: 0,
-                    margin: 2,
-                    editable: true,
-                    width: 110
-                  },
-                  new go.Binding("text", "name").makeTwoWay(),
+                  { column: 0, margin: 2, editable: true, width: 110 },
+                  new go.Binding("text", "name").makeTwoWay()
                 ),
 
-                // Tipo da coluna
+                // Tipo
                 $(go.TextBlock,
-                  {
-                    column: 1,
-                    margin: 2,
-                    width: 90,
-                    editable: true
-                  },
+                  { column: 1, margin: 2, width: 90, editable: true },
                   new go.Binding("text", "type").makeTwoWay()
                 ),
 
@@ -539,17 +533,24 @@ export class GenerateFormComponent
                       const data = obj.part?.data;
                       const item = obj.panel?.data;
 
-                      if (data && item) {
-                        this.diagram.model.startTransaction("toggle pk");
-                        item.pk = !item.pk;
-                        this.diagram.model.updateTargetBindings(data);
-                        this.diagram.model.commitTransaction("toggle pk");
+                      if (!data || !item) return;
+
+                      this.diagram.model.startTransaction("toggle pk");
+
+                      item.pk = !item.pk;
+
+                      if (item.pk && item.ai === undefined) {
+                        item.ai = true;
                       }
+                      if (item.pk && item.nn === undefined) {
+                        item.nn = true;
+                      }
+
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle pk");
                     }
                   },
-                  $(go.TextBlock,
-                    new go.Binding("text", "pk", v => v ? "PK" : "-")
-                  )
+                  $(go.TextBlock, new go.Binding("text", "pk", v => v ? "PK" : "-"))
                 ),
 
                 // FK
@@ -561,23 +562,81 @@ export class GenerateFormComponent
                       const data = obj.part?.data;
                       const item = obj.panel?.data;
 
-                      if (data && item) {
-                        this.diagram.model.startTransaction("toggle fk");
-                        item.fk = !item.fk;
-                        this.diagram.model.updateTargetBindings(data);
-                        this.diagram.model.commitTransaction("toggle fk");
-                      }
+                      if (!data || !item) return;
+
+                      this.diagram.model.startTransaction("toggle fk");
+                      item.fk = !item.fk;
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle fk");
                     }
                   },
-                  $(go.TextBlock,
-                    new go.Binding("text", "fk", v => v ? "FK" : "-")
-                  )
+                  $(go.TextBlock, new go.Binding("text", "fk", v => v ? "FK" : "-"))
+                ),
+
+                // NN
+                $("Button",
+                  {
+                    column: 4,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
+
+                      if (!data || !item) return;
+
+                      this.diagram.model.startTransaction("toggle nn");
+                      item.nn = !item.nn;
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle nn");
+                    }
+                  },
+                  $(go.TextBlock, new go.Binding("text", "nn", v => v ? "NN" : "-"))
+                ),
+
+                // UQ
+                $("Button",
+                  {
+                    column: 5,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
+
+                      if (!data || !item) return;
+
+                      this.diagram.model.startTransaction("toggle uq");
+                      item.uq = !item.uq;
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle uq");
+                    }
+                  },
+                  $(go.TextBlock, new go.Binding("text", "uq", v => v ? "UQ" : "-"))
+                ),
+
+                // AI
+                $("Button",
+                  {
+                    column: 6,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
+
+                      if (!data || !item) return;
+
+                      this.diagram.model.startTransaction("toggle ai");
+                      item.ai = !item.ai;
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle ai");
+                    }
+                  },
+                  $(go.TextBlock, new go.Binding("text", "ai", v => v ? "AI" : "-"))
                 ),
 
                 // DELETE
                 $("Button",
                   {
-                    column: 4,
+                    column: 7,
                     width: 35,
                     click: (e, obj) => {
                       const node = obj.part?.data;
@@ -694,7 +753,7 @@ export class GenerateFormComponent
     this.diagram.model.addNodeData({
       key: 'TabelaNova',
       columns: [
-        { name: 'Id', type: 'int', pk: true, fk: false }
+        { name: 'Id', type: 'int', pk: true, fk: false, nn: true, uq: false, ai: true }
       ]
     });
   }
@@ -712,7 +771,10 @@ export class GenerateFormComponent
       name: "CampoNovo",
       type: "int",
       pk: false,
-      fk: false
+      fk: false,
+      nn: false,
+      uq: false,
+      ai: false
     });
 
     this.diagram.model.updateTargetBindings(node);
@@ -856,5 +918,40 @@ export class GenerateFormComponent
     });
 
     erTables.push(group);
+  }
+
+  /**
+   * Gera o script SQL com base no modelo do diagrama
+   */
+  async gerarSqlPreview() {
+    const model = this.diagram.model as go.GraphLinksModel;
+
+    const payload: GenerateSqlRequest = {
+      tables: model.nodeDataArray as TableDto[],
+      links: model.linkDataArray as LinkDto[]
+    };
+
+    const response = (await this.service.generateSql(payload) as any);
+    this.sqlGerado = response.sql;
+  }
+
+  /**
+   * Realiza o download do script SQL gerado a partir do modelo do diagrama
+   */
+  downloadSql() {
+    if (!this.sqlGerado) return;
+
+    const blob = new Blob([this.sqlGerado], {
+      type: 'text/sql;charset=utf-8;'
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'script.sql';
+    a.click();
+
+    window.URL.revokeObjectURL(url);
   }
 }
