@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit } from '@angular/core';
+import { Component, ElementRef, Injector, OnInit, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, Validators } from '@angular/forms';
 import { GenerateFilterType } from 'src/app/models/GenerateFilterType';
 import { GenerateService } from 'src/app/services/generate.service';
@@ -23,6 +23,7 @@ export class ModelagemErFormComponent
   links = links;
 
   sqlGerado: string | null = null;
+  @ViewChild('sqlSection') sqlSection!: ElementRef;
 
   constructor(
     protected injector: Injector,
@@ -358,46 +359,6 @@ export class ModelagemErFormComponent
   }
 
   /**
-   * Salvar o diagrama em formato JSON para posterior edição ou geração de arquivos a partir do modelo criado
-   */
-  exportDiagram() {
-    const json = this.diagram.model.toJson();
-
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'diagrama-er.json';
-    a.click();
-
-    window.URL.revokeObjectURL(url);
-  }
-
-  /**
-   * Importa um diagrama em formato JSON
-   */
-  importDiagram(event: any) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = (e: any) => {
-      const json = e.target.result;
-
-      const model = go.Model.fromJson(json) as go.GraphLinksModel;
-
-      model.linkFromPortIdProperty = "fromColumn";
-      model.linkToPortIdProperty = "toColumn";
-
-      this.diagram.model = model;
-    };
-
-    reader.readAsText(file);
-  }
-
-  /**
    * Adiciona uma nova tabela ao formulário de ER com base em um nó do diagrama
    */
   addErTable(node: any) {
@@ -429,8 +390,14 @@ export class ModelagemErFormComponent
       links: model.linkDataArray as LinkDto[]
     };
 
-    const response = (await this.service.generateSql(payload) as any);
-    this.sqlGerado = response.sql;
+    this.sqlGerado = this.service.generateSql(payload);
+
+    setTimeout(() => {
+      this.sqlSection?.nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 100);
   }
 
   /**
@@ -451,5 +418,35 @@ export class ModelagemErFormComponent
     a.click();
 
     window.URL.revokeObjectURL(url);
+  }
+
+  /**
+  * Importa um script SQL, realiza o parsing para extrair tabelas, colunas e relacionamentos, e atualiza o diagrama de ER com base no modelo extraído do SQL
+  */
+  async importSql(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const text = await file.text();
+
+    const result = this.service.parseSqlToDiagram(text);
+
+    this.nodes = result.nodes;
+    this.links = result.links;
+
+    this.diagram.model = new go.GraphLinksModel(this.nodes, this.links);
+  }
+
+  /**
+  * Copia o script SQL gerado para a área de transferência do usuário.
+  */
+  copiarSql() {
+    if (!this.sqlGerado) return;
+
+    navigator.clipboard.writeText(this.sqlGerado)
+      .then(() => {
+      })
+      .catch(() => {
+      });
   }
 }

@@ -6,14 +6,10 @@
       <ng-template matStepLabel>Configurar Geraração de Código</ng-template>
       <div class="mt-3">
         <div class="mt-2 mb-2 d-flex justify-content-end flex-wrap gap-2">
-          <button class="btn btn-secondary" (click)="exportDiagram()">
-            Exportar JSON
-          </button>
-
           <button class="btn btn-secondary ml-2" (click)="fileInput.click()">
-            Importar JSON
+            Importar SQL
           </button>
-          <input type="file" #fileInput hidden accept=".json" (change)="importDiagram($event)" />
+          <input type="file" hidden #fileInput (change)="importSql($event)" accept=".sql" />
 
           <button class="btn btn-warning ml-2" (click)="gerarSqlPreview()">
             Gerar SQL
@@ -27,12 +23,17 @@
         <div id="diagramDiv" style="width: 100%; height: 500px; border: 1px solid #ccc;"></div>
       </div>
 
-      <div *ngIf="sqlGerado" class="mt-3">
+      <div *ngIf="sqlGerado" #sqlSection class="mt-3">
         <div class="script-header d-flex justify-content-between align-items-center">
           <span>Script SQL Gerado</span>
-          <button class="btn btn-sm btn-outline-light" (click)="downloadSql()">
-            <fa-icon [icon]="['fas', 'download']"></fa-icon>
-          </button>
+          <div class="d-flex align-items-center">
+            <button class="btn btn-sm btn-outline-light mr-2" (click)="copiarSql()">
+              <fa-icon [icon]="['fas', 'copy']"></fa-icon>
+            </button>
+            <button class="btn btn-sm btn-outline-light" (click)="downloadSql()">
+              <fa-icon [icon]="['fas', 'download']"></fa-icon>
+            </button>
+          </div>
         </div>
         <textarea
           class="script-area"

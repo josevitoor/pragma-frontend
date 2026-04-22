@@ -931,8 +931,7 @@ export class GenerateFormComponent
       links: model.linkDataArray as LinkDto[]
     };
 
-    const response = (await this.service.generateSql(payload) as any);
-    this.sqlGerado = response.sql;
+    this.sqlGerado = this.service.generateSql(payload);
   }
 
   /**
