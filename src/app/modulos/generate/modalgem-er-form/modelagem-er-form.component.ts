@@ -434,13 +434,16 @@ export class ModelagemErFormComponent
     this.nodes = result.nodes;
     this.links = result.links;
 
-    this.diagram.model = new go.GraphLinksModel(this.nodes, this.links);
+    const model = new go.GraphLinksModel(this.nodes, this.links);
+    model.linkFromPortIdProperty = "fromColumn";
+    model.linkToPortIdProperty = "toColumn";
+    this.diagram.model = model;
   }
 
   /**
   * Copia o script SQL gerado para a área de transferência do usuário.
   */
-  copiarSql() {
+  copySql() {
     if (!this.sqlGerado) return;
 
     navigator.clipboard.writeText(this.sqlGerado)
@@ -448,5 +451,23 @@ export class ModelagemErFormComponent
       })
       .catch(() => {
       });
+  }
+
+  /**
+  * Navega para a tela de geração de código, passando o modelo do diagrama ER para o serviço e indicando que a origem é o editor de ER por meio de query params.
+  */
+  goToGeracao() {
+    const model = this.diagram.model as go.GraphLinksModel;
+
+    const payload = {
+      tables: model.nodeDataArray,
+      links: model.linkDataArray
+    };
+
+    this.service.setErModel(payload);
+
+    this.router.navigate(['/dashboard/gerador/gerar-codigo'], {
+      queryParams: { erEditor: true }
+    });
   }
 }

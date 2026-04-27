@@ -2,12 +2,16 @@ import { Injectable, Injector } from '@angular/core';
 import { BaseService, ConfigService } from 'tce-ng-lib';
 import { GenerateFilterType } from '../models/GenerateFilterType';
 import { ColumnDto, GenerateSqlRequest, LinkDto, TableDto } from '../models/GenerateSqlType';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GenerateService extends BaseService<GenerateFilterType> {
   private readonly BASE_URL = `${ConfigService.getEnv().apiSistema}/Generate`;
+
+  private erModelSubject = new BehaviorSubject<any>(null);
+  erModel$ = this.erModelSubject.asObservable();
 
   constructor(injector: Injector) {
     super(injector, `${ConfigService.getEnv().apiSistema}/Generate`);
@@ -134,7 +138,7 @@ export class GenerateService extends BaseService<GenerateFilterType> {
       });
     });
 
-    const fkRegex = /ALTER TABLE (\w+)[\s\S]*?FOREIGN KEY \((\w+)\)\s+REFERENCES (\w+)\((\w+)\)/gi;
+    const fkRegex = /ALTER TABLE\s+(\w+)[\s\S]*?FOREIGN KEY\s*\((\w+)\)\s*REFERENCES\s+(\w+)\s*\((\w+)\)/gi;
 
     let fkMatch;
 
@@ -148,8 +152,8 @@ export class GenerateService extends BaseService<GenerateFilterType> {
       links.push({
         from: fromTable,
         to: toTable,
-        fromColumn,
-        toColumn
+        fromColumn: fromColumn,
+        toColumn: toColumn
       });
 
       const table = nodes.find(t => t.key === fromTable);
@@ -199,5 +203,19 @@ export class GenerateService extends BaseService<GenerateFilterType> {
     }
 
     return tables;
+  }
+
+  /**
+  * Define o modelo ER atual para ser utilizado na modelagem e geração de SQL
+  */
+  setErModel(model: any) {
+    this.erModelSubject.next(model);
+  }
+
+  /**
+  * Retorna o modelo ER atual para ser utilizado na modelagem e geração de SQL
+  */
+  getErModel() {
+    return this.erModelSubject.value;
   }
 }
