@@ -3,6 +3,7 @@ import { BaseService, ConfigService } from 'tce-ng-lib';
 import { InformationType } from '../models/InformationType';
 import { ConnectionFilterType } from '../models/ConnectionFilterType';
 import { HttpParams } from '@angular/common/http';
+import { ExecuteScriptDTO } from '../models/ExecuteScriptType';
 
 @Injectable({
   providedIn: 'root',
@@ -48,5 +49,12 @@ export class InformationService extends BaseService<InformationType> {
     return this.http
       .get<InformationType[]>(`${this.BASE_URL}`, { params })
       .toPromise();
+  }
+
+  /**
+   * Executa script SQL com base na conexão passada
+   */
+  async executeScript(dto: ExecuteScriptDTO): Promise<void> {
+    await this.http.post(`${this.BASE_URL}/execute-script`, dto).toPromise();
   }
 }

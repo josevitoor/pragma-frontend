@@ -18,6 +18,7 @@ import * as go from 'gojs';
 import { links, nodes } from 'src/app/constants/InitialModel';
 import { GenerateSqlRequest, LinkDto, TableDto } from 'src/app/models/GenerateSqlType';
 import { ActivatedRoute } from '@angular/router';
+import { GenerateBatchFilterType } from 'src/app/models/GenerateBatchFilterType';
 
 @Component({
   selector: 'pragma-generate-form',
@@ -202,7 +203,7 @@ export class GenerateFormComponent
     allSelectedColumns.forEach((column) => {
       formArray.push(
         this.formBuilder.group({
-          databaseColumn: [{ value: column, disabled: true }],
+          databaseColumn: [column],
           displayName: [this.formatLabel(column)],
         })
       );
@@ -293,40 +294,98 @@ export class GenerateFormComponent
       return;
     }
 
-    const generateFormValues = this.resourceForm.getRawValue();
     const pathFormValues = this.pathForm.getRawValue();
     const connectionFormValues = this.connectionForm.getRawValue();
 
-    const generateData: GenerateFilterType = {
-      tableName: generateFormValues.tableName,
-      entityName: generateFormValues.entityName,
-      isServerSide: generateFormValues.isServerSide,
-      hasTceBase: generateFormValues.hasTceBase,
-      hasApiVersion: generateFormValues.hasApiVersion,
-      tableColumnsFilter: generateFormValues.tableColumnsFilter,
-      generateBackendFilter: {
-        projectApiPath: pathFormValues.projectApiPath,
-      },
-      idConfiguracaoEstrutura: pathFormValues.idConfiguracaoEstrutura,
-      generateFrontendFilter: {
-        projectClientPath: pathFormValues.projectClientPath,
-        tableColumnsList: this.tableColumnsFormArray
-          .getRawValue()
-          .map((item: any) => ({
-            databaseColumn: item.databaseColumn,
-            displayName: item.displayName,
-          })),
-      },
-      connectionFilter: {
-        servidor: connectionFormValues.servidor,
-        porta: connectionFormValues.porta,
-        usuario: connectionFormValues.usuario,
-        senha: connectionFormValues.senha,
-        baseDados: connectionFormValues.baseDados,
-      },
-    };
+    let items: GenerateFilterType[] = [];
+
+    if (this.erEditor) {
+      const erTables = this.resourceForm.get('erTables')?.value || [];
+
+      items = erTables.map((table: any) => ({
+        tableName: table.tableName,
+        entityName: table.entityName,
+        isServerSide: table.isServerSide,
+        hasTceBase: table.hasTceBase,
+        hasApiVersion: table.hasApiVersion,
+        tableColumnsFilter: table.tableColumnsFilter,
+        generateFrontendFilter: {
+          projectClientPath: pathFormValues.projectClientPath,
+          tableColumnsList: (table.tableColumnsFormArray || []).map((c: any) => ({
+            databaseColumn: c.databaseColumn,
+            displayName: c.displayName
+          }))
+        },
+        idConfiguracaoEstrutura: pathFormValues.idConfiguracaoEstrutura,
+        generateBackendFilter: {
+          projectApiPath: pathFormValues.projectApiPath
+        },
+        connectionFilter: {
+          servidor: connectionFormValues.servidor,
+          porta: connectionFormValues.porta,
+          usuario: connectionFormValues.usuario,
+          senha: connectionFormValues.senha,
+          baseDados: connectionFormValues.baseDados,
+        }
+      }));
+    } else {
+      const form = this.resourceForm.getRawValue();
+
+      items = [{
+        tableName: form.tableName,
+        entityName: form.entityName,
+        isServerSide: form.isServerSide,
+        hasTceBase: form.hasTceBase,
+        hasApiVersion: form.hasApiVersion,
+        tableColumnsFilter: form.tableColumnsFilter,
+
+        generateFrontendFilter: {
+          projectClientPath: pathFormValues.projectClientPath,
+          tableColumnsList: this.tableColumnsFormArray
+            .getRawValue()
+            .map((item: any) => ({
+              databaseColumn: item.databaseColumn,
+              displayName: item.displayName,
+            })),
+        },
+        idConfiguracaoEstrutura: pathFormValues.idConfiguracaoEstrutura,
+        generateBackendFilter: {
+          projectApiPath: pathFormValues.projectApiPath
+        },
+        connectionFilter: {
+          servidor: connectionFormValues.servidor,
+          porta: connectionFormValues.porta,
+          usuario: connectionFormValues.usuario,
+          senha: connectionFormValues.senha,
+          baseDados: connectionFormValues.baseDados,
+        }
+      }];
+    }
+
+    const payload: GenerateBatchFilterType = { items }
+
     try {
-      await this.service.generateCrudFiles(generateData);
+      if (this.erEditor) {
+        const model = this.diagram.model as go.GraphLinksModel;
+        const tabelas = model.nodeDataArray.map((t: any) => t.key);
+        const script = await this.gerarSqlPreview(true) as string;
+
+        this.informationService.blockInterceptation();
+
+        await this.informationService.executeScript({
+          filter: {
+            servidor: connectionFormValues.servidor,
+            porta: connectionFormValues.porta,
+            usuario: connectionFormValues.usuario,
+            senha: connectionFormValues.senha,
+            baseDados: connectionFormValues.baseDados
+          },
+          script,
+          tabelas
+        });
+      }
+
+      await this.service.generateCrudFiles(payload);
 
       await this.router.navigate(['dashboard']).then(() => {
         this.globalMessageService.successMessages.next([
@@ -403,7 +462,7 @@ export class GenerateFormComponent
       .trim();
   }
 
-  buildErTables() {
+  private buildErTables() {
     const nodes = this.diagram.model.nodeDataArray;
     const erTables = this.resourceForm.get('erTables') as FormArray;
 
@@ -435,7 +494,7 @@ export class GenerateFormComponent
     });
   }
 
-  updateErTableColumnsFormArray(index: number) {
+  private updateErTableColumnsFormArray(index: number) {
     const erTables = this.resourceForm.get('erTables') as FormArray;
     const tableGroup = erTables.at(index);
 
@@ -453,28 +512,17 @@ export class GenerateFormComponent
     allSelectedColumns.forEach((column) => {
       formArray.push(
         this.formBuilder.group({
-          databaseColumn: [{ value: column, disabled: true }],
+          databaseColumn: [column],
           displayName: [this.formatLabel(column)]
         })
       );
     });
   }
 
-  getColumnsFromEr(index: number) {
-    const table = (this.resourceForm.get('erTables') as FormArray).at(index);
-
-    const cols = table.get('tableColumnsFormArray')?.value || [];
-
-    return cols.map((c: any) => ({
-      label: c.databaseColumn,
-      value: c.databaseColumn
-    }));
-  }
-
   /**
    * Aplica o modelo de ER criado no diagrama para o formulário, sincronizando as tabelas e colunas selecionadas
    */
-  applyModel(model: any) {
+  private applyModel(model: any) {
     this.nodes = model.tables;
     this.links = model.links;
 
@@ -489,7 +537,7 @@ export class GenerateFormComponent
   /**
    * Inicializa o diagrama de ER utilizando a biblioteca GoJS
    */
-  initDiagram() {
+  private initDiagram() {
     const $ = go.GraphObject.make;
 
     this.diagram = $(go.Diagram, 'diagramDiv', {
@@ -523,12 +571,28 @@ export class GenerateFormComponent
 
         // Colunas
         $(go.Panel, "Table",
+          { stretch: go.GraphObject.Horizontal },
+
+            $(go.Panel, "TableRow",
+              { background: "#f5f5f5" },
+
+              $(go.TextBlock, "Nome", { column: 0, margin: 2, font: "bold 11px sans-serif", width: 110 }),
+              $(go.TextBlock, "Tipo", { column: 1, margin: 2, font: "bold 11px sans-serif", width: 118 }),
+              $(go.TextBlock, "PK", { column: 2, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "FK", { column: 3, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "NN", { column: 4, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "UQ", { column: 5, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "AI", { column: 6, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "", { column: 7, width: 40 })
+            )
+          ),
+
+          $(go.Panel, "Table",
           {
             padding: 4,
             defaultAlignment: go.Spot.Left
           },
           new go.Binding("itemArray", "columns"),
-
           {
             itemTemplate:
               $(go.Panel, "TableRow",
@@ -578,7 +642,7 @@ export class GenerateFormComponent
                       this.diagram.model.commitTransaction("toggle pk");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "pk", v => v ? "PK" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "pk", v => v ? "✔" : "-"))
                 ),
 
                 // FK
@@ -598,7 +662,7 @@ export class GenerateFormComponent
                       this.diagram.model.commitTransaction("toggle fk");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "fk", v => v ? "FK" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "fk", v => v ? "✔" : "-"))
                 ),
 
                 // NN
@@ -618,7 +682,7 @@ export class GenerateFormComponent
                       this.diagram.model.commitTransaction("toggle nn");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "nn", v => v ? "NN" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "nn", v => v ? "✔" : "-"))
                 ),
 
                 // UQ
@@ -638,7 +702,7 @@ export class GenerateFormComponent
                       this.diagram.model.commitTransaction("toggle uq");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "uq", v => v ? "UQ" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "uq", v => v ? "✔" : "-"))
                 ),
 
                 // AI
@@ -658,7 +722,7 @@ export class GenerateFormComponent
                       this.diagram.model.commitTransaction("toggle ai");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "ai", v => v ? "AI" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "ai", v => v ? "✔" : "-"))
                 ),
 
                 // DELETE
@@ -813,7 +877,7 @@ export class GenerateFormComponent
   /**
    * Adiciona uma nova tabela ao formulário de ER com base em um nó do diagrama
    */
-  addErTable(node: any) {
+  private addErTable(node: any) {
     const erTables = this.resourceForm.get('erTables') as FormArray;
 
     const group = this.formBuilder.group({
@@ -834,7 +898,7 @@ export class GenerateFormComponent
   /**
    * Gera o script SQL com base no modelo do diagrama
    */
-  async gerarSqlPreview() {
+  async gerarSqlPreview(retorna: boolean = false) : Promise<string | void> {
     const model = this.diagram.model as go.GraphLinksModel;
 
     const payload: GenerateSqlRequest = {
@@ -843,6 +907,8 @@ export class GenerateFormComponent
     };
 
     this.sqlGerado = this.service.generateSql(payload);
+
+    if (retorna) return this.sqlGerado;
 
     setTimeout(() => {
       this.sqlSection?.nativeElement.scrollIntoView({
@@ -908,7 +974,7 @@ export class GenerateFormComponent
   /**
    * Sincroniza o formulário de ER com o modelo do diagrama
    */
-  syncErFormWithDiagram() {
+  private syncErFormWithDiagram() {
     const model = this.diagram.model as go.GraphLinksModel;
     const nodes = model.nodeDataArray;
 
@@ -940,7 +1006,7 @@ export class GenerateFormComponent
   /**
    * Sincroniza as colunas de uma tabela do formulário de ER com as colunas do diagrama
    */
-  syncColumns(tableForm: any, diagramColumns: any[]) {
+  private syncColumns(tableForm: any, diagramColumns: any[]) {
     const formArray = tableForm.get('tableColumnsFormArray') as FormArray;
     const existing = formArray.value;
 
@@ -958,7 +1024,7 @@ export class GenerateFormComponent
       const old = existing.find((c: any) => c.databaseColumn === colName);
       formArray.push(
         this.formBuilder.group({
-          databaseColumn: [{ value: colName, disabled: true }],
+          databaseColumn: [colName],
           displayName: [old?.displayName || this.formatLabel(colName)]
         })
       );

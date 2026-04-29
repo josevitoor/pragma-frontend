@@ -81,12 +81,28 @@ export class ModelagemErFormComponent
 
         // Colunas
         $(go.Panel, "Table",
+          { stretch: go.GraphObject.Horizontal },
+
+            $(go.Panel, "TableRow",
+              { background: "#f5f5f5" },
+
+              $(go.TextBlock, "Nome", { column: 0, margin: 2, font: "bold 11px sans-serif", width: 110 }),
+              $(go.TextBlock, "Tipo", { column: 1, margin: 2, font: "bold 11px sans-serif", width: 118 }),
+              $(go.TextBlock, "PK", { column: 2, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "FK", { column: 3, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "NN", { column: 4, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "UQ", { column: 5, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "AI", { column: 6, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "", { column: 7, width: 40 })
+            )
+          ),
+
+          $(go.Panel, "Table",
           {
             padding: 4,
             defaultAlignment: go.Spot.Left
           },
           new go.Binding("itemArray", "columns"),
-
           {
             itemTemplate:
               $(go.Panel, "TableRow",
@@ -136,7 +152,7 @@ export class ModelagemErFormComponent
                       this.diagram.model.commitTransaction("toggle pk");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "pk", v => v ? "PK" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "pk", v => v ? "✔" : "-"))
                 ),
 
                 // FK
@@ -156,7 +172,7 @@ export class ModelagemErFormComponent
                       this.diagram.model.commitTransaction("toggle fk");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "fk", v => v ? "FK" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "fk", v => v ? "✔" : "-"))
                 ),
 
                 // NN
@@ -176,7 +192,7 @@ export class ModelagemErFormComponent
                       this.diagram.model.commitTransaction("toggle nn");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "nn", v => v ? "NN" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "nn", v => v ? "✔" : "-"))
                 ),
 
                 // UQ
@@ -196,7 +212,7 @@ export class ModelagemErFormComponent
                       this.diagram.model.commitTransaction("toggle uq");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "uq", v => v ? "UQ" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "uq", v => v ? "✔" : "-"))
                 ),
 
                 // AI
@@ -216,7 +232,7 @@ export class ModelagemErFormComponent
                       this.diagram.model.commitTransaction("toggle ai");
                     }
                   },
-                  $(go.TextBlock, new go.Binding("text", "ai", v => v ? "AI" : "-"))
+                  $(go.TextBlock, new go.Binding("text", "ai", v => v ? "✔" : "-"))
                 ),
 
                 // DELETE

@@ -3,6 +3,7 @@ import { BaseService, ConfigService } from 'tce-ng-lib';
 import { GenerateFilterType } from '../models/GenerateFilterType';
 import { ColumnDto, GenerateSqlRequest, LinkDto, TableDto } from '../models/GenerateSqlType';
 import { BehaviorSubject } from 'rxjs';
+import { GenerateBatchFilterType } from '../models/GenerateBatchFilterType';
 
 @Injectable({
   providedIn: 'root',
@@ -20,9 +21,9 @@ export class GenerateService extends BaseService<GenerateFilterType> {
   /**
    * Gera os arquivos de código CRUD
    */
-  generateCrudFiles(generateFilter: GenerateFilterType): Promise<void> {
+  generateCrudFiles(data: GenerateBatchFilterType): Promise<void> {
     return this.http
-      .post<void>(`${this.BASE_URL}/generate-files`, generateFilter)
+      .post<void>(`${this.BASE_URL}/generate-files`, data)
       .toPromise();
   }
 
