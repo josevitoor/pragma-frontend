@@ -1,16 +1,10 @@
 <tce-container>
-  <tce-container-header
-    title="Gerador Automatizado de Código CRUD"
-    [showBtn]="false"
-  ></tce-container-header>
+  <tce-container-header title="Gerador Automatizado de Código CRUD" [showBtn]="false"></tce-container-header>
 
   <main class="mt-3">
     <mat-horizontal-stepper [linear]="true" #stepper>
       <!-- Step para Conexão com Banco de Dados -->
-      <mat-step
-        [stepControl]="connectionForm"
-        [completed]="connectionCompleted"
-      >
+      <mat-step [stepControl]="connectionForm" [completed]="connectionCompleted">
         <form [formGroup]="connectionForm">
           <ng-template matStepLabel>Conexão Banco de Dados</ng-template>
           <fieldset>
@@ -72,17 +66,11 @@
             </div>
           </fieldset>
           <div class="mt-3 d-flex justify-content-between flex-wrap">
-            <button
-              class="btn btn-primary mb-2 w-sm-auto"
-              (click)="openModalConfiguracaoConexaoBanco()"
-            >
+            <button class="btn btn-primary mb-2 w-sm-auto" (click)="openModalConfiguracaoConexaoBanco()">
               SELECIONAR CONEXÃO PREESTABELECIDA
             </button>
 
-            <button
-              class="btn btn-primary mb-2 w-sm-auto"
-              (click)="submitConnectionForm(stepper)"
-            >
+            <button class="btn btn-primary mb-2 w-sm-auto" (click)="submitConnectionForm(stepper)">
               TESTAR CONEXÃO E AVANÇAR
             </button>
           </div>
@@ -103,7 +91,8 @@
                   type="text"
                   placeholder="C:\Workspace\Project"
                   [control]="pathForm.get('projectApiPath')"
-                ></tce-input-field>
+                >
+                </tce-input-field>
               </div>
               <div class="col-6">
                 <tce-input-field
@@ -112,7 +101,8 @@
                   type="text"
                   placeholder="C:\Workspace\Project"
                   [control]="pathForm.get('projectClientPath')"
-                ></tce-input-field>
+                >
+                </tce-input-field>
               </div>
             </div>
             <div class="form-row">
@@ -132,23 +122,14 @@
           </fieldset>
           <div class="mt-3 d-flex justify-content-between flex-wrap">
             <div class="d-flex flex-wrap gap-2">
-              <button
-                class="btn btn-outline-success w-auto mb-2 mb-sm-0"
-                (click)="stepper.previous()"
-              >
+              <button class="btn btn-outline-success w-auto mb-2 mb-sm-0" (click)="stepper.previous()">
                 VOLTAR
               </button>
-              <button
-                class="btn btn-primary w-auto mb-2 mb-sm-0 ml-3"
-                (click)="openModalConfiguracaoCaminho()"
-              >
+              <button class="btn btn-primary w-auto mb-2 mb-sm-0 ml-3" (click)="openModalConfiguracaoCaminho()">
                 SELECIONAR CAMINHO PREESTABELECIDO
               </button>
             </div>
-            <button
-              class="btn btn-primary w-auto mb-2 mb-sm-0"
-              (click)="submitPathForm(stepper)"
-            >
+            <button class="btn btn-primary w-auto mb-2 mb-sm-0" (click)="submitPathForm(stepper)">
               VALIDAR CAMINHO E AVANÇAR
             </button>
           </div>
@@ -160,10 +141,11 @@
         <form [formGroup]="resourceForm">
           <ng-template matStepLabel>Configurar Geraração de Código</ng-template>
           <fieldset>
-            <small *ngIf="!erEditor" class="right-form">(*) Campos Obrigatórios</small>
+            <small *ngIf="!erEditor && !sqlEditor" class="right-form">(*) Campos Obrigatórios</small>
             <legend>Formulário Gerador de Código</legend>
-            <ng-container *ngIf="!erEditor; else erEditorTemplate"> 
-              <div class="form-row mt-2" >
+
+            <ng-container *ngIf="!erEditor && !sqlEditor">
+              <div class="form-row mt-2">
                 <div class="col-3">
                   <tce-select-field
                     label="Nome da Tabela"
@@ -180,16 +162,9 @@
                   <label for="entityName">Nome da Entidade</label>
                   <svg
                     tooltip="Nome utilizado na geração de código para criar classes e componentes (Entity, Controller, Service, Type e Components)"
-                    class="ml-1"
-                    placement="right"
-                    style="cursor: pointer"
-                    width="10px"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 512 512"
-                  >
-                    <path
-                      d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"
-                    />
+                    class="ml-1" placement="right" style="cursor: pointer" width="10px"
+                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z" />
                   </svg>
                   <tce-input-field
                     [showLabel]="false"
@@ -228,31 +203,52 @@
                   </tce-select-field>
                 </div>
               </div>
+              <div class="form-row mt-2">
+                <div class="col-12" *ngIf="tableColumnsFormArray.controls.length > 0">
+                  <table class="table table-bordered text-center w-100">
+                    <thead class="thead-light">
+                      <tr>
+                        <th style="width: 40%">Campo da Tabela</th>
+                        <th>Rótulo na Listagem</th>
+                      </tr>
+                    </thead>
+                    <tbody formArrayName="tableColumnsFormArray">
+                      <tr *ngFor=" let column of tableColumnsFormArray.controls; let i = index " [formGroupName]="i">
+                        <td class="align-middle"> {{ column.get("databaseColumn")?.value }} </td>
+                        <td> <input type="text" class="form-control" formControlName="displayName" placeholder="Digite o rótulo" /> </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </ng-container>
-            <ng-template #erEditorTemplate>
+
+            <ng-container *ngIf="erEditor">
               <tce-card titulo="Modelagem Relacional" class="p-2">
-                <div class="mt-2 mb-2 d-flex justify-content-end flex-wrap gap-2">
-                  <button class="btn btn-secondary ml-2" (click)="fileInput.click()">
-                    Importar SQL
-                  </button>
-                  <input type="file" hidden #fileInput (change)="importSql($event)" accept=".sql" />
-
-                  <button class="btn btn-warning ml-2" (click)="gerarSqlPreview()">
-                    Gerar SQL
-                  </button>
-
-                  <button class="btn btn-primary ml-2" (click)="addTable()">
-                    Adicionar tabela
-                  </button>
+                <div class="d-flex justify-content-between flex-wrap align-items-center mb-2">
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-info"><strong>PK</strong> - Chave primária</span>
+                    <span class="badge bg-info ml-2"><strong>FK</strong> - Chave estrangeira</span>
+                    <span class="badge bg-info ml-2"><strong>NN</strong> - Não nulo</span>
+                    <span class="badge bg-info ml-2"><strong>UQ</strong> - Único</span>
+                    <span class="badge bg-info ml-2"><strong>AI</strong> - Auto incremento</span>
+                  </div>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-secondary" (click)="fileInput.click()">Importar SQL</button>
+                    <input type="file" hidden #fileInput (change)="importSql($event)" accept=".sql" />
+                    <button class="btn btn-warning ml-2" (click)="gerarSqlPreview()">Gerar SQL</button>
+                    <button class="btn btn-primary ml-2" (click)="addTable()">Adicionar tabela</button>
+                  </div>
                 </div>
 
                 <div id="diagramDiv" style="width: 100%; height: 500px; border: 1px solid #ccc;"></div>
               </tce-card>
 
-              <div *ngIf="sqlGerado" #sqlSection class="mt-3">
+              <div *ngIf="sqlGerado" class="mt-3">
                 <div class="script-header d-flex justify-content-between align-items-center">
                   <span>Script SQL Gerado</span>
-                  <div class="d-flex align-items-center">
+
+                  <div>
                     <button class="btn btn-sm btn-outline-light mr-2" (click)="copySql()">
                       <fa-icon [icon]="['fas', 'copy']"></fa-icon>
                     </button>
@@ -261,34 +257,21 @@
                     </button>
                   </div>
                 </div>
-                <textarea
-                  class="script-area"
-                  [value]="sqlGerado"
-                  readonly
-                ></textarea>
+                <textarea class="script-area" [value]="sqlGerado" readonly></textarea>
               </div>
 
               <div formArrayName="erTables" class="mt-3">
-                <div *ngFor="let table of resourceForm.get('erTables')?.controls; let i = index"
-                  [formGroupName]="i"
-                  class="card mb-3 p-3"
-                >
+                <div *ngFor="let table of resourceForm.get('erTables')?.controls; let i = index" [formGroupName]="i" class="card p-3 mb-3">
+
                   <h5>{{ table.get('tableName')?.value }}</h5>
                   <div class="form-row">
                     <div class="col-4">
                       <label for="entityName">Nome da Entidade</label>
                       <svg
                         tooltip="Nome utilizado na geração de código para criar classes e componentes (Entity, Controller, Service, Type e Components)"
-                        class="ml-1"
-                        placement="right"
-                        style="cursor: pointer"
-                        width="10px"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 512 512"
-                      >
-                        <path
-                          d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"
-                        />
+                        class="ml-1" placement="right" style="cursor: pointer" width="10px"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z" />
                       </svg>
                       <tce-input-field
                         [showLabel]="false"
@@ -308,7 +291,98 @@
                         [deveSerMultiplo]="true"
                         bindLabelSelect="label"
                         bindValueSelect="value"
-                        placeholder="Selecione os campos que irão aparecer na tabela">
+                        placeholder="Selecione os campos que irão aparecer na tabela"
+                      >
+                      </tce-select-field>
+                    </div>
+                    <div class="col-4">
+                      <tce-select-field
+                        label="Campos com Filtro"
+                        [itemFillSelect]="table.get('columnsOptions')?.value"
+                        formControlName="tableColumnsFilter"
+                        [deveSerMultiplo]="true"
+                        bindLabelSelect="label"
+                        bindValueSelect="value"
+                        placeholder="Selecione os campos da tabela com filtro habilitado"
+                      >
+                      </tce-select-field>
+                    </div>
+                  </div>
+                  <div *ngIf="table.get('tableColumnsFormArray')?.controls.length > 0">
+                    <table class="table table-bordered text-center w-100">
+                      <thead class="thead-light">
+                        <tr>
+                          <th>Campo da tabela</th>
+                          <th>Rótulo na listagem</th>
+                        </tr>
+                      </thead>
+                      <tbody formArrayName="tableColumnsFormArray">
+                        <tr *ngFor="let col of table.get('tableColumnsFormArray').controls; let j = index" [formGroupName]="j">
+                          <td>{{ col.get('databaseColumn')?.value }}</td>
+                          <td><input class="form-control" formControlName="displayName" /></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="sqlEditor">
+              <div class="script-container">
+                <div class="script-header d-flex justify-content-between align-items-center">
+                  <span>Script SQL</span>
+                  <div class="d-flex align-items-center">
+                    <button class="btn btn-secondary mr-2" (click)="fileInput.click()">Importar SQL</button>
+                    <input type="file" hidden #fileInput (change)="importSql($event)" accept=".sql" />
+                    <button class="btn btn-primary mr-2" (click)="processSql()">Atualizar Estrutura</button>
+                    <button type="button" class="btn btn-sm btn-outline-light mr-2" (click)="copySql()">
+                      <fa-icon [icon]="['fas', 'copy']"></fa-icon>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light" (click)="downloadSql()">
+                      <fa-icon [icon]="['fas', 'download']"></fa-icon>
+                    </button>
+                  </div>
+                </div>
+                <textarea 
+                  class="script-area"
+                  formControlName="sqlScript"
+                  rows="15">
+                </textarea>
+              </div>
+
+              <div formArrayName="erTables" class="mt-3">
+                <div *ngFor="let table of resourceForm.get('erTables')?.controls; let i = index" [formGroupName]="i"
+                  class="card mb-3 p-3">
+                  <h5>{{ table.get('tableName')?.value }}</h5>
+                  <div class="form-row">
+                    <div class="col-4"> <label for="entityName">Nome da Entidade</label> 
+                      <svg
+                        tooltip="Nome utilizado na geração de código para criar classes e componentes (Entity, Controller, Service, Type e Components)"
+                        class="ml-1" placement="right" style="cursor: pointer" width="10px"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z" />
+                      </svg>
+                      <tce-input-field
+                        [showLabel]="false"
+                        label="Nome da Entidade"
+                        formControlName="entityName"
+                        type="text"
+                        placeholder="Digite o nome da entidade"
+                        [control]="resourceForm.get('entityName')"
+                      >
+                      </tce-input-field>
+                    </div>
+                    <div class="col-4">
+                      <tce-select-field
+                        label="Campos para Listagem"
+                        [itemFillSelect]="table.get('columnsOptions')?.value"
+                        formControlName="tableColumnsList"
+                        [deveSerMultiplo]="true"
+                        bindLabelSelect="label"
+                        bindValueSelect="value"
+                        placeholder="Selecione os campos que irão aparecer na tabela"
+                      >
                       </tce-select-field>
                     </div>
                     <div class="col-4">
@@ -323,7 +397,6 @@
                       </tce-select-field>
                     </div>
                   </div>
-
                   <div *ngIf="table.get('tableColumnsFormArray')?.controls.length > 0">
                     <table class="table table-bordered text-center w-100">
                       <thead class="thead-light">
@@ -333,8 +406,7 @@
                         </tr>
                       </thead>
                       <tbody formArrayName="tableColumnsFormArray">
-                        <tr *ngFor="let col of table.get('tableColumnsFormArray').controls; let j = index"
-                            [formGroupName]="j">
+                        <tr *ngFor="let col of table.get('tableColumnsFormArray').controls; let j = index" [formGroupName]="j">
                           <td>{{ col.get('databaseColumn')?.value }}</td>
                           <td><input class="form-control" formControlName="displayName" /></td>
                         </tr>
@@ -343,84 +415,24 @@
                   </div>
                 </div>
               </div>
-            </ng-template>
-            <div class="form-row">
-              <div class="col-3 mt-4">
-                <mat-slide-toggle formControlName="hasTceBase">
-                  PROJETO UTILIZA BIBLIOTECA TCE BASE
-                </mat-slide-toggle>
+            </ng-container>
+
+            <div class="form-row mt-3">
+              <div class="col-3">
+                <mat-slide-toggle formControlName="hasTceBase">PROJETO UTILIZA BIBLIOTECA TCE BASE</mat-slide-toggle>
               </div>
-              <div class="col-3 mt-4">
-                <mat-slide-toggle formControlName="isServerSide">
-                  HABILITAR OPÇÕES LADO SERVIDOR
-                </mat-slide-toggle>
+              <div class="col-3">
+                <mat-slide-toggle formControlName="isServerSide">HABILITAR OPÇÕES LADO SERVIDOR</mat-slide-toggle>
               </div>
-              <div class="col-3 mt-4">
-                <mat-slide-toggle formControlName="hasApiVersion">
-                  INCLUIR VERSIONAMENTO DE API
-                </mat-slide-toggle>
-              </div>
-            </div>
-            <div
-              *ngIf="showTceBaseWarning"
-              class="alert alert-warning mt-2"
-              role="alert"
-            >
-              <strong>Atenção:</strong> Caso o projeto não utilize a biblioteca
-              TCE Base (padrão atual), poderá ser necessário ajustar manualmente
-              alguns imports de infraestrutura nos serviços gerados.
-            </div>
-            <div class="form-row mt-2">
-              <div
-                class="col-12"
-                *ngIf="tableColumnsFormArray.controls.length > 0"
-              >
-                <table class="table table-bordered text-center w-100">
-                  <thead class="thead-light">
-                    <tr>
-                      <th style="width: 40%">Campo da Tabela</th>
-                      <th>Rótulo na Listagem</th>
-                    </tr>
-                  </thead>
-                  <tbody formArrayName="tableColumnsFormArray">
-                    <tr
-                      *ngFor="
-                        let column of tableColumnsFormArray.controls;
-                        let i = index
-                      "
-                      [formGroupName]="i"
-                    >
-                      <td class="align-middle">
-                        {{ column.get("databaseColumn")?.value }}
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          class="form-control"
-                          formControlName="displayName"
-                          placeholder="Digite o rótulo"
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="col-3">
+                <mat-slide-toggle formControlName="hasApiVersion">INCLUIR VERSIONAMENTO DE API</mat-slide-toggle>
               </div>
             </div>
           </fieldset>
 
           <div class="mt-3 d-flex justify-content-between flex-wrap">
-            <button
-              class="btn btn-outline-success w-100 w-sm-auto mb-2 mb-sm-0"
-              (click)="stepper.previous()"
-            >
-              VOLTAR
-            </button>
-            <button
-              class="btn btn-primary mr-2 w-100 w-sm-auto mb-2 mb-sm-0"
-              (click)="submitGenerateInfoForm()"
-            >
-              GERAR ARQUIVOS
-            </button>
+            <button class="btn btn-outline-success" (click)="stepper.previous()">VOLTAR</button>
+            <button class="btn btn-primary" (click)="submitGenerateInfoForm()">GERAR ARQUIVOS</button>
           </div>
         </form>
       </mat-step>

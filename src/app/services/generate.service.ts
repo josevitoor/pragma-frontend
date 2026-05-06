@@ -14,6 +14,9 @@ export class GenerateService extends BaseService<GenerateFilterType> {
   private erModelSubject = new BehaviorSubject<any>(null);
   erModel$ = this.erModelSubject.asObservable();
 
+  private sqlScriptSubject = new BehaviorSubject<string | null>(null);
+  sqlScript$ = this.sqlScriptSubject.asObservable();
+
   constructor(injector: Injector) {
     super(injector, `${ConfigService.getEnv().apiSistema}/Generate`);
   }
@@ -218,5 +221,19 @@ export class GenerateService extends BaseService<GenerateFilterType> {
   */
   getErModel() {
     return this.erModelSubject.value;
+  }
+
+  /**
+  * Define o SQL para ser utilizado na geração de código
+  */
+  setSqlScript(sql: string) {
+    this.sqlScriptSubject.next(sql);
+  }
+
+  /**
+  * Retorna o SQL para ser utilizado na geração de código
+  */
+  getSqlScript(): string | null {
+    return this.sqlScriptSubject.value;
   }
 }

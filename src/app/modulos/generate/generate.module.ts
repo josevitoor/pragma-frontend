@@ -8,9 +8,10 @@ import { GenerateFormComponent } from './generate-form/generate-form.component';
 import { MatStepperModule } from '@angular/material/stepper';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { ModelagemErFormComponent } from './modalgem-er-form/modelagem-er-form.component';
+import { ModelagemSqlFormComponent } from './modalgem-sql/modelagem-sql-form.component';
 
 @NgModule({
-  declarations: [GenerateFormComponent, ModelagemErFormComponent],
+  declarations: [GenerateFormComponent, ModelagemErFormComponent, ModelagemSqlFormComponent],
   imports: [
     CommonModule,
     KubernetesModule,

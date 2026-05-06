@@ -1,11 +1,11 @@
 import { Component, ElementRef, Injector, OnInit, ViewChild } from '@angular/core';
-import { FormArray, FormBuilder, Validators } from '@angular/forms';
 import { GenerateFilterType } from 'src/app/models/GenerateFilterType';
 import { GenerateService } from 'src/app/services/generate.service';
 import { BaseResourceFormComponent } from 'tce-ng-lib';
 import * as go from 'gojs';
 import { links, nodes } from 'src/app/constants/InitialModel';
 import { GenerateSqlRequest, LinkDto, TableDto } from 'src/app/models/GenerateSqlType';
+import { FormBuilder } from '@angular/forms';
 
 @Component({
   selector: 'pragma-modelagem-er-form',
@@ -33,9 +33,6 @@ export class ModelagemErFormComponent
     this.service = injector.get(GenerateService);
     
     this.resourceForm = this.formBuilder.group({
-      tableColumnsList: [{ value: [], disabled: true }, Validators.required],
-      tableColumnsFormArray: this.formBuilder.array([]),
-      erTables: this.formBuilder.array([]) 
     });
   }
 
@@ -109,6 +106,8 @@ export class ModelagemErFormComponent
                 {
                   fromLinkable: true,
                   toLinkable: true,
+                  fromLinkableSelfNode: true,
+                  toLinkableSelfNode: true,
                   cursor: "pointer",
                   portId: ""
                 },
@@ -281,11 +280,23 @@ export class ModelagemErFormComponent
     $(go.Link,
       {
         routing: go.Link.AvoidsNodes,
-        corner: 5
+        corner: 20,
+        reshapable: true,
+        resegmentable: true
       },
-      $(go.Shape,
-        { strokeWidth: 2, stroke: "#555" }
-      )
+
+      new go.Binding("fromSpot", "", (d, obj) => {
+        const link = obj.part;
+        return link?.fromNode === link?.toNode ? go.Spot.Right : go.Spot.Right;
+      }),
+
+      new go.Binding("toSpot", "", (d, obj) => {
+        const link = obj.part;
+        return link?.fromNode === link?.toNode ? go.Spot.Right : go.Spot.Left;
+      }),
+
+      $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
+      $(go.Shape, { toArrow: "Standard" })
     );
 
     // Validação para evitar criação de links duplicados e garantir que o destino seja uma PK
@@ -296,19 +307,35 @@ export class ModelagemErFormComponent
       const fromTable = fromNode.data;
       const toTable = toNode.data;
 
-      const fromColumn = fromTable.columns?.find((c: any) => c.name === fromPort.portId);
-      const toColumn = toTable.columns?.find((c: any) => c.name === toPort.portId);
+      const fromColumnName = fromPort.portId;
+      const toColumnName = toPort.portId;
+
+      const fromColumn = fromTable.columns?.find((c: any) => c.name === fromColumnName);
+      const toColumn = toTable.columns?.find((c: any) => c.name === toColumnName);
 
       if (!fromColumn || !toColumn) return false;
 
       if (!toColumn.pk) return false;
 
-      const exists = links.some((l: any) =>
+      if (fromTable.key === toTable.key && fromColumnName === toColumnName) {
+        return false;
+      }
+
+      const alreadyLinked = links.some((l: any) =>
         l.from === fromTable.key &&
-        l.to === toTable.key
+        l.fromColumn === fromColumnName
       );
 
-      if (exists) return false;
+      if (alreadyLinked) return false;
+
+      const duplicate = links.some((l: any) =>
+        l.from === fromTable.key &&
+        l.to === toTable.key &&
+        l.fromColumn === fromColumnName &&
+        l.toColumn === toColumnName
+      );
+
+      if (duplicate) return false;
 
       return true;
     };
@@ -328,7 +355,6 @@ export class ModelagemErFormComponent
       }
 
       this.diagram.model.updateTargetBindings(fromNode);
-
       this.diagram.model.commitTransaction("set fk");
     });
 
@@ -345,7 +371,7 @@ export class ModelagemErFormComponent
     this.diagram.model.addNodeData({
       key: 'TabelaNova',
       columns: [
-        { name: 'Id', type: 'int', pk: true, fk: false, nn: true, uq: false, ai: true }
+        { name: 'Id', type: 'INT', pk: true, fk: false, nn: true, uq: false, ai: true }
       ]
     });
   }
@@ -361,7 +387,7 @@ export class ModelagemErFormComponent
 
     node.columns.push({
       name: "CampoNovo",
-      type: "int",
+      type: "INT",
       pk: false,
       fk: false,
       nn: false,
@@ -372,27 +398,6 @@ export class ModelagemErFormComponent
     this.diagram.model.updateTargetBindings(node);
 
     this.diagram.model.commitTransaction("add column");
-  }
-
-  /**
-   * Adiciona uma nova tabela ao formulário de ER com base em um nó do diagrama
-   */
-  addErTable(node: any) {
-    const erTables = this.resourceForm.get('erTables') as FormArray;
-
-    const group = this.formBuilder.group({
-      tableName: [node.key],
-      entityName: [node.key, Validators.required],
-      tableColumnsList: [[]],
-      tableColumnsFilter: [[]],
-      columnsOptions: [node.columns.map((c: any) => ({
-        label: c.name,
-        value: c.name
-      }))],
-      tableColumnsFormArray: this.formBuilder.array([])
-    });
-
-    erTables.push(group);
   }
 
   /**
@@ -462,11 +467,7 @@ export class ModelagemErFormComponent
   copySql() {
     if (!this.sqlGerado) return;
 
-    navigator.clipboard.writeText(this.sqlGerado)
-      .then(() => {
-      })
-      .catch(() => {
-      });
+    navigator.clipboard.writeText(this.sqlGerado);
   }
 
   /**

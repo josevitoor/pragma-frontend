@@ -54,6 +54,7 @@ export class GenerateFormComponent
   @ViewChild('sqlSection') sqlSection!: ElementRef;
 
   erEditor: boolean = false;
+  sqlEditor: boolean = false;
 
   constructor(
     protected injector: Injector,
@@ -114,7 +115,8 @@ export class GenerateFormComponent
       hasApiVersion: [false],
       tableColumnsList: [{ value: [], disabled: true }],
       tableColumnsFormArray: this.formBuilder.array([]),
-      erTables: this.formBuilder.array([]) 
+      erTables: this.formBuilder.array([]),
+      sqlScript: [''],
     });
   }
 
@@ -153,6 +155,7 @@ export class GenerateFormComponent
 
     this.activateRoute.queryParams.subscribe((params) => {
       this.erEditor = params['erEditor'] === 'true';
+      this.sqlEditor = params['sqlEditor'] === 'true';
       if (this.erEditor) {
         this.resourceForm.get('tableName')?.clearValidators();
         this.resourceForm.get('entityName')?.clearValidators();
@@ -174,6 +177,22 @@ export class GenerateFormComponent
             this.buildErTables();
           }
         }, 0);
+      } else if (this.sqlEditor) {
+        this.resourceForm.get('tableName')?.clearValidators();
+        this.resourceForm.get('entityName')?.clearValidators();
+        this.resourceForm.get('tableColumnsList')?.clearValidators();
+
+        this.resourceForm.get('tableName')?.updateValueAndValidity();
+        this.resourceForm.get('entityName')?.updateValueAndValidity();
+        this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
+
+        const sql = this.service.getSqlScript();
+        this.resourceForm.get('sqlScript')?.setValue(sql);
+
+        if (!sql) return;
+        const result = this.service.parseSqlToDiagram(sql);
+
+        this.buildErTablesFromSql(result.nodes);
       } else {
         (this.resourceForm.get('erTables') as FormArray).clear();
 
@@ -299,7 +318,7 @@ export class GenerateFormComponent
 
     let items: GenerateFilterType[] = [];
 
-    if (this.erEditor) {
+    if (this.erEditor || this.sqlEditor) {
       const erTables = this.resourceForm.get('erTables')?.value || [];
 
       items = erTables.map((table: any) => ({
@@ -365,10 +384,24 @@ export class GenerateFormComponent
     const payload: GenerateBatchFilterType = { items }
 
     try {
-      if (this.erEditor) {
-        const model = this.diagram.model as go.GraphLinksModel;
-        const tabelas = model.nodeDataArray.map((t: any) => t.key);
-        const script = await this.gerarSqlPreview(true) as string;
+      if (this.erEditor || this.sqlEditor) {
+        let script = '';
+        let tabelas: string[] = [];
+
+        if (this.erEditor) {
+          const model = this.diagram.model as go.GraphLinksModel;
+          tabelas = model.nodeDataArray.map((t: any) => t.key);
+          script = await this.gerarSqlPreview(true) as string;
+        } else {
+          script = this.resourceForm.get('sqlScript')?.value;
+          const result = this.service.parseSqlToDiagram(script);
+          tabelas = result.nodes.map((n: any) => n.key);
+        }
+        
+        if (!script || !tabelas) {
+          await this.alert.warning('Atenção!', 'É necessário ter dados do script SQL preenchidos para este tipo de geração de código.');
+          return;
+        }
 
         this.informationService.blockInterceptation();
 
@@ -393,7 +426,7 @@ export class GenerateFormComponent
         ]);
       });
     } catch (error) {
-      this.alert.error(
+      await this.alert.error(
         'Erro!',
         (error as any)?.error?.Erros[0] ?? `Erro ao gerar arquivos.`
       );
@@ -599,6 +632,8 @@ export class GenerateFormComponent
                 {
                   fromLinkable: true,
                   toLinkable: true,
+                  fromLinkableSelfNode: true,
+                  toLinkableSelfNode: true,
                   cursor: "pointer",
                   portId: ""
                 },
@@ -771,11 +806,23 @@ export class GenerateFormComponent
     $(go.Link,
       {
         routing: go.Link.AvoidsNodes,
-        corner: 5
+        corner: 20,
+        reshapable: true,
+        resegmentable: true
       },
-      $(go.Shape,
-        { strokeWidth: 2, stroke: "#555" }
-      )
+
+      new go.Binding("fromSpot", "", (d, obj) => {
+        const link = obj.part;
+        return link?.fromNode === link?.toNode ? go.Spot.Right : go.Spot.Right;
+      }),
+
+      new go.Binding("toSpot", "", (d, obj) => {
+        const link = obj.part;
+        return link?.fromNode === link?.toNode ? go.Spot.Right : go.Spot.Left;
+      }),
+
+      $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
+      $(go.Shape, { toArrow: "Standard" })
     );
 
     // Validação para evitar criação de links duplicados e garantir que o destino seja uma PK
@@ -786,19 +833,35 @@ export class GenerateFormComponent
       const fromTable = fromNode.data;
       const toTable = toNode.data;
 
-      const fromColumn = fromTable.columns?.find((c: any) => c.name === fromPort.portId);
-      const toColumn = toTable.columns?.find((c: any) => c.name === toPort.portId);
+      const fromColumnName = fromPort.portId;
+      const toColumnName = toPort.portId;
+
+      const fromColumn = fromTable.columns?.find((c: any) => c.name === fromColumnName);
+      const toColumn = toTable.columns?.find((c: any) => c.name === toColumnName);
 
       if (!fromColumn || !toColumn) return false;
 
       if (!toColumn.pk) return false;
 
-      const exists = links.some((l: any) =>
+      if (fromTable.key === toTable.key && fromColumnName === toColumnName) {
+        return false;
+      }
+
+      const alreadyLinked = links.some((l: any) =>
         l.from === fromTable.key &&
-        l.to === toTable.key
+        l.fromColumn === fromColumnName
       );
 
-      if (exists) return false;
+      if (alreadyLinked) return false;
+
+      const duplicate = links.some((l: any) =>
+        l.from === fromTable.key &&
+        l.to === toTable.key &&
+        l.fromColumn === fromColumnName &&
+        l.toColumn === toColumnName
+      );
+
+      if (duplicate) return false;
 
       return true;
     };
@@ -818,15 +881,13 @@ export class GenerateFormComponent
       }
 
       this.diagram.model.updateTargetBindings(fromNode);
-
       this.diagram.model.commitTransaction("set fk");
     });
 
     // Listener para sincronizar o formulário com o diagrama
     this.diagram.addModelChangedListener((e) => {
       if (e.isTransactionFinished) {
-        const isEr = this.resourceForm.get('erEditor')?.value;
-        if (isEr) {
+        if (this.erEditor) {
           this.syncErFormWithDiagram();
         }
       }
@@ -845,7 +906,7 @@ export class GenerateFormComponent
     this.diagram.model.addNodeData({
       key: 'TabelaNova',
       columns: [
-        { name: 'Id', type: 'int', pk: true, fk: false, nn: true, uq: false, ai: true }
+        { name: 'Id', type: 'INT', pk: true, fk: false, nn: true, uq: false, ai: true }
       ]
     });
   }
@@ -861,7 +922,7 @@ export class GenerateFormComponent
 
     node.columns.push({
       name: "CampoNovo",
-      type: "int",
+      type: "INT",
       pk: false,
       fk: false,
       nn: false,
@@ -962,13 +1023,10 @@ export class GenerateFormComponent
   * Copia o script SQL gerado para a área de transferência do usuário.
   */
   copySql() {
-    if (!this.sqlGerado) return;
+    if ((this.erEditor && !this.sqlGerado) || (this.sqlEditor && !this.resourceForm.get('sqlScript')?.value)) return;
 
-    navigator.clipboard.writeText(this.sqlGerado)
-      .then(() => {
-      })
-      .catch(() => {
-      });
+    const sql = this.erEditor ? this.sqlGerado : this.resourceForm.get('sqlScript')?.value;
+    navigator.clipboard.writeText(sql);
   }
 
   /**
@@ -1036,5 +1094,74 @@ export class GenerateFormComponent
     }));
 
     tableForm.get('columnsOptions')?.setValue(newOptions, { emitEvent: false });
+  }
+
+  private buildErTablesFromSql(nodes: any[]) {
+    const formArray = this.resourceForm.get('erTables') as FormArray;
+    formArray.clear();
+
+    nodes.forEach((table) => {
+
+      const columnsOptions = table.columns.map((c: any) => ({
+        label: c.name,
+        value: c.name
+      }));
+
+      const group = this.formBuilder.group({
+        tableName: [table.key],
+        entityName: [table.key],
+        isServerSide: [false],
+        hasTceBase: [true],
+        hasApiVersion: [false],
+
+        tableColumnsList: [[]],
+        tableColumnsFilter: [[]],
+
+        columnsOptions: [columnsOptions],
+
+        tableColumnsFormArray: this.formBuilder.array([])
+      });
+
+      this.bindTableColumnSync(group);
+
+      formArray.push(group);
+    });
+  }
+
+  private bindTableColumnSync(tableGroup: FormGroup) {
+    tableGroup.get('tableColumnsFilter')?.valueChanges.subscribe(() => {
+      this.updateTableColumnsFormArrayFromGroup(tableGroup);
+    });
+
+    tableGroup.get('tableColumnsList')?.valueChanges.subscribe(() => {
+      this.updateTableColumnsFormArrayFromGroup(tableGroup);
+    });
+  }
+
+  private updateTableColumnsFormArrayFromGroup(group: FormGroup) {
+    const filterColumns = group.get('tableColumnsFilter')?.value || [];
+    const listColumns = group.get('tableColumnsList')?.value || [];
+
+    const allSelected = Array.from(new Set([...filterColumns, ...listColumns]));
+
+    const formArray = group.get('tableColumnsFormArray') as FormArray;
+    formArray.clear();
+
+    allSelected.forEach((column: string) => {
+      formArray.push(
+        this.formBuilder.group({
+          databaseColumn: [column],
+          displayName: [this.formatLabel(column)]
+        })
+      );
+    });
+  }
+
+  processSql() {
+    if (!this.resourceForm.get('sqlScript')?.value) return;
+
+    const result = this.service.parseSqlToDiagram(this.resourceForm.get('sqlScript')?.value);
+
+    this.buildErTablesFromSql(result.nodes);
   }
 }
