@@ -15,10 +15,11 @@ import { ConfiguracaoCaminhosService } from 'src/app/services/configuracao-camin
 import { ConfiguracaoEstruturaProjetoType } from 'src/app/models/ConfiguracaoEstruturaProjetoType';
 import { ConfiguracaoEstruturaProjetoService } from 'src/app/services/configuracao-estrutura-projeto.service';
 import * as go from 'gojs';
-import { links, nodes } from 'src/app/constants/InitialModel';
+import { Links, Nodes } from 'src/app/constants/InitialModel';
 import { GenerateSqlRequest, LinkDto, TableDto } from 'src/app/models/GenerateSqlType';
 import { ActivatedRoute } from '@angular/router';
 import { GenerateBatchFilterType } from 'src/app/models/GenerateBatchFilterType';
+import { SqlTypes } from 'src/app/constants/SqlTypes';
 
 @Component({
   selector: 'pragma-generate-form',
@@ -43,12 +44,13 @@ export class GenerateFormComponent
   pathCompleted = false;
 
   showTceBaseWarning = false;
+  isSqlStructureUpdated = true;
 
   modalRef!: BsModalRef;
 
   diagram!: go.Diagram;
-  nodes = nodes;
-  links = links;
+  nodes = Nodes;
+  links = Links;
 
   sqlGerado: string | null = null;
   @ViewChild('sqlSection') sqlSection!: ElementRef;
@@ -151,6 +153,10 @@ export class GenerateFormComponent
       this.showTceBaseWarning = !value;
     });
 
+    this.resourceForm.get('sqlScript')?.valueChanges.subscribe(() => {
+      this.isSqlStructureUpdated = false;
+    });
+
     this.configuracoesEstruturas = await this.configEstrutura.getAll().then();
 
     this.activateRoute.queryParams.subscribe((params) => {
@@ -188,6 +194,7 @@ export class GenerateFormComponent
 
         const sql = this.service.getSqlScript();
         this.resourceForm.get('sqlScript')?.setValue(sql);
+        this.isSqlStructureUpdated = true;
 
         if (!sql) return;
         const result = this.service.parseSqlToDiagram(sql);
@@ -318,7 +325,27 @@ export class GenerateFormComponent
 
     let items: GenerateFilterType[] = [];
 
-    if (this.erEditor || this.sqlEditor) {
+    if (this.erEditor || this.sqlEditor) { 
+      let validationErrors: string[] = [];
+
+      if (this.erEditor) {
+        validationErrors = this.validateModel();
+      } else {
+        const sql = this.resourceForm.get('sqlScript')?.value?.trim();
+
+        if (!sql) {
+          await this.alert.warning('Atenção!', 'Nenhum script SQL encontrado para geração.');
+          return;
+        }
+
+        validationErrors = this.validateSqlModel(sql);
+      }
+
+      if (validationErrors.length > 0) {
+        await this.alert.warning('Erros de validação!', validationErrors.join('<br>'));
+        return;
+      }
+
       const erTables = this.resourceForm.get('erTables')?.value || [];
 
       items = erTables.map((table: any) => ({
@@ -1157,11 +1184,130 @@ export class GenerateFormComponent
     });
   }
 
+  /**
+   * Atualizar formulário baseado no script SQL
+   */
   processSql() {
     if (!this.resourceForm.get('sqlScript')?.value) return;
 
     const result = this.service.parseSqlToDiagram(this.resourceForm.get('sqlScript')?.value);
 
     this.buildErTablesFromSql(result.nodes);
+
+    this.isSqlStructureUpdated = true;
+  }
+
+  /**
+  * Salvar diagrama em formato json
+  */
+  saveDiagram() {
+    const json = this.diagram.model.toJson();
+
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diagrama-er.json';
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  }
+
+  /**
+  * Abrir e carregar diagrama em formato json
+  */
+  openDiagram(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e: any) => {
+      const json = e.target.result;
+
+      const model = go.Model.fromJson(json) as go.GraphLinksModel;
+
+      model.linkFromPortIdProperty = "fromColumn";
+      model.linkToPortIdProperty = "toColumn";
+
+      this.diagram.model = model;
+    };
+
+    reader.readAsText(file);
+  }
+
+  /**
+  * Valida diagrama
+  */
+  validateModel(): string[] {
+    const model = this.diagram.model as go.GraphLinksModel;
+
+    return this.validateDiagramModel(
+      model.nodeDataArray as TableDto[],
+      model.linkDataArray as LinkDto[]
+    );
+  }
+
+  /**
+  * Valida Sql
+  */
+  validateSqlModel(script: string): string[] {
+    const result = this.service.parseSqlToDiagram(script);
+
+    return this.validateDiagramModel(
+      result.nodes,
+      result.links
+    );
+  }
+
+  /**
+  * Valida para identificar se possui erros antes de gerar
+  */
+  validateDiagramModel(nodes: TableDto[], links: LinkDto[]): string[] {
+    const errors: string[] = [];
+
+    nodes.forEach((table: any) => {
+      if (!table.key?.trim()) {
+        errors.push(`Existe tabela sem nome.`);
+      }
+
+      const columns = table.columns || [];
+      columns.forEach((column: any, index: number) => {
+
+        if (!column.name?.trim()) {
+          errors.push(`A tabela '${table.key}' possui coluna sem nome.`);
+        }
+
+        if (!column.type?.trim()) {
+          errors.push(`A coluna '${table.key}.${column.name}' está sem tipo.`);
+        }
+
+        const isValidType = SqlTypes.some(r => r.test(column.type.trim()));
+
+        if (!isValidType) {
+          errors.push(`Tipo inválido '${column.type}' em '${table.key}.${column.name}'.`);
+        }
+
+        const duplicated = columns.some((c: any, i: number) =>
+          i !== index &&
+          c.name?.trim()?.toLowerCase() === column.name?.trim()?.toLowerCase()
+        );
+
+        if (duplicated) {
+          errors.push(`A tabela '${table.key}' possui coluna duplicada '${column.name}'.`);
+        }
+
+        if (column.fk) {
+          const hasReference = links.some((l: any) => l.from === table.key && l.fromColumn === column.name);
+
+          if (!hasReference) {
+            errors.push(`A FK '${table.key}.${column.name}' não possui referência.`);
+          }
+        }
+      });
+    });
+
+    return [...new Set(errors)];
   }
 }

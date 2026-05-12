@@ -1,11 +1,12 @@
 import { Component, ElementRef, Injector, OnInit, ViewChild } from '@angular/core';
 import { GenerateFilterType } from 'src/app/models/GenerateFilterType';
 import { GenerateService } from 'src/app/services/generate.service';
-import { BaseResourceFormComponent } from 'tce-ng-lib';
+import { AlertsService, BaseResourceFormComponent } from 'tce-ng-lib';
 import * as go from 'gojs';
-import { links, nodes } from 'src/app/constants/InitialModel';
+import { Links, Nodes } from 'src/app/constants/InitialModel';
 import { GenerateSqlRequest, LinkDto, TableDto } from 'src/app/models/GenerateSqlType';
 import { FormBuilder } from '@angular/forms';
+import { SqlTypes } from 'src/app/constants/SqlTypes';
 
 @Component({
   selector: 'pragma-modelagem-er-form',
@@ -19,15 +20,16 @@ export class ModelagemErFormComponent
   service: GenerateService;
 
   diagram!: go.Diagram;
-  nodes = nodes;
-  links = links;
+  nodes = Nodes;
+  links = Links;
 
   sqlGerado: string | null = null;
   @ViewChild('sqlSection') sqlSection!: ElementRef;
 
   constructor(
     protected injector: Injector,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private alerts: AlertsService
   ) {
     super(new GenerateService(injector));
     this.service = injector.get(GenerateService);
@@ -481,10 +483,121 @@ export class ModelagemErFormComponent
       links: model.linkDataArray
     };
 
+    const errors = this.validateModel();
+
+    if (errors.length > 0) {
+      this.alerts.warning('Erros de validação!', errors.join('<br>'));
+
+      return;
+    }
+
     this.service.setErModel(payload);
 
     this.router.navigate(['/dashboard/gerador/gerar-codigo'], {
       queryParams: { erEditor: true }
     });
+  }
+
+  /**
+  * Salvar diagrama em formato json
+  */
+  saveDiagram() {
+    const json = this.diagram.model.toJson();
+
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diagrama-er.json';
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  }
+
+  
+  /**
+  * Abrir e carregar diagrama em formato json
+  */
+  openDiagram(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e: any) => {
+      const json = e.target.result;
+
+      const model = go.Model.fromJson(json) as go.GraphLinksModel;
+
+      model.linkFromPortIdProperty = "fromColumn";
+      model.linkToPortIdProperty = "toColumn";
+
+      this.diagram.model = model;
+    };
+
+    reader.readAsText(file);
+  }
+
+  /**
+  * Valida diagrama
+  */
+  validateModel(): string[] {
+    const model = this.diagram.model as go.GraphLinksModel;
+
+    return this.validateDiagramModel(
+      model.nodeDataArray as TableDto[],
+      model.linkDataArray as LinkDto[]
+    );
+  }
+
+  /**
+  * Valida para identificar se possui erros antes de gerar
+  */
+  validateDiagramModel(nodes: TableDto[], links: LinkDto[]): string[] {
+    const errors: string[] = [];
+
+    nodes.forEach((table: any) => {
+      if (!table.key?.trim()) {
+        errors.push(`Existe tabela sem nome.`);
+      }
+
+      const columns = table.columns || [];
+      columns.forEach((column: any, index: number) => {
+
+        if (!column.name?.trim()) {
+          errors.push(`A tabela '${table.key}' possui coluna sem nome.`);
+        }
+
+        if (!column.type?.trim()) {
+          errors.push(`A coluna '${table.key}.${column.name}' está sem tipo.`);
+        }
+
+        const isValidType = SqlTypes.some(r => r.test(column.type.trim()));
+
+        if (!isValidType) {
+          errors.push(`Tipo inválido '${column.type}' em '${table.key}.${column.name}'.`);
+        }
+
+        const duplicated = columns.some((c: any, i: number) =>
+          i !== index &&
+          c.name?.trim()?.toLowerCase() === column.name?.trim()?.toLowerCase()
+        );
+
+        if (duplicated) {
+          errors.push(`A tabela '${table.key}' possui coluna duplicada '${column.name}'.`);
+        }
+
+        if (column.fk) {
+          const hasReference = links.some((l: any) => l.from === table.key && l.fromColumn === column.name);
+
+          if (!hasReference) {
+            errors.push(`A FK '${table.key}.${column.name}' não possui referência.`);
+          }
+        }
+      });
+    });
+
+    return [...new Set(errors)];
   }
 }

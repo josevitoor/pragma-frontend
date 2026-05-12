@@ -1,4 +1,4 @@
-export const nodes = [
+export const Nodes = [
   {
     key: 'Usuario',
     columns: [
@@ -16,7 +16,7 @@ export const nodes = [
   }
 ];
 
-export const links = [
+export const Links = [
   {
     from: 'Pedido',
     to: 'Usuario',
