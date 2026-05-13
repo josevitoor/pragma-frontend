@@ -540,6 +540,23 @@ export class ModelagemErFormComponent
   }
 
   /**
+  * Delega se o arquivo é .json ou .sql
+  */
+  async openArquivo(event: any) {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const extension = file.name.split('.').pop()?.toLowerCase();
+
+    if (extension === 'json') {
+      this.openDiagram(event)
+    } else {
+      this.importSql(event)
+    }
+  }
+
+  /**
   * Valida diagrama
   */
   validateModel(): string[] {

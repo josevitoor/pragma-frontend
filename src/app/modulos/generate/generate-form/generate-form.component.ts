@@ -20,6 +20,11 @@ import { GenerateSqlRequest, LinkDto, TableDto } from 'src/app/models/GenerateSq
 import { ActivatedRoute } from '@angular/router';
 import { GenerateBatchFilterType } from 'src/app/models/GenerateBatchFilterType';
 import { SqlTypes } from 'src/app/constants/SqlTypes';
+import { GenerateWorkspaceType } from 'src/app/models/GenerateWorkspaceType';
+import { WokspaceGeracaoService } from 'src/app/services/workspace-geracao.service';
+import { WorkspaceGeracaoType } from 'src/app/models/WorkspaceGeracaoType';
+import { TipoGeracaoEnum } from 'src/app/enum/TipoGeracaoEnum';
+import { WorkspaceModalComponent } from '../workspace-modal/workspace-modal.component';
 
 @Component({
   selector: 'pragma-generate-form',
@@ -66,7 +71,8 @@ export class GenerateFormComponent
     private bsModalService: BsModalService,
     private alert: AlertsService,
     private configEstrutura: ConfiguracaoEstruturaProjetoService,
-    private activateRoute: ActivatedRoute
+    private activateRoute: ActivatedRoute,
+    private workspaceService: WokspaceGeracaoService
   ) {
     super(new GenerateService(injector));
 
@@ -243,7 +249,7 @@ export class GenerateFormComponent
   /**
    * Realiza a submissão do formulário com as informações de conexão do banco de dados
    */
-  async submitConnectionForm(stepper: MatStepper): Promise<void> {
+  async submitConnectionForm(stepper?: MatStepper): Promise<void> {
     if (this.connectionForm.invalid) {
       this.connectionForm.markAllAsTouched();
       return;
@@ -265,7 +271,9 @@ export class GenerateFormComponent
         this.informationService.customMessageSuccess,
       ]);
       this.connectionCompleted = true;
-      stepper.next();
+      if (stepper) {
+        stepper.next();
+      }
     } catch (error) {
       this.alert.error(
         'Erro!',
@@ -279,7 +287,7 @@ export class GenerateFormComponent
   /**
    * Realiza a submissão do formulário com as informações de caminhos do projeto
    */
-  async submitPathForm(stepper: MatStepper) {
+  async submitPathForm(stepper?: MatStepper) {
     if (this.pathForm.invalid) {
       this.pathForm.markAllAsTouched();
       return;
@@ -300,7 +308,9 @@ export class GenerateFormComponent
         'Caminho validado com sucesso!',
       ]);
       this.pathCompleted = true;
-      stepper.next();
+      if (stepper) {
+        stepper.next();
+      }
     } catch (error) {
       this.alert.error(
         'Erro!',
@@ -1238,6 +1248,23 @@ export class GenerateFormComponent
   }
 
   /**
+  * Delega se o arquivo é .json ou .sql
+  */
+  async openArquivo(event: any) {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const extension = file.name.split('.').pop()?.toLowerCase();
+
+    if (extension === 'json') {
+      this.openDiagram(event)
+    } else {
+      this.importSql(event)
+    }
+  }
+
+  /**
   * Valida diagrama
   */
   validateModel(): string[] {
@@ -1309,5 +1336,362 @@ export class GenerateFormComponent
     });
 
     return [...new Set(errors)];
+  }
+
+  async salvarWorkspaceGeracao(): Promise<void> {
+    const pathFormValues = this.pathForm.getRawValue();
+    const connectionFormValues = this.connectionForm.getRawValue();
+
+    let arquivo: GenerateWorkspaceType;
+
+    if (this.erEditor || this.sqlEditor) {
+
+      let validationErrors: string[] = [];
+
+      if (this.erEditor) {
+        validationErrors = this.validateModel();
+      } else {
+        const sql = this.resourceForm.get('sqlScript')?.value?.trim();
+
+        if (!sql) {
+          await this.alert.warning(
+            'Atenção!',
+            'Nenhum script SQL encontrado para salvar.'
+          );
+
+          return;
+        }
+
+        validationErrors = this.validateSqlModel(sql);
+      }
+
+      if (validationErrors.length > 0) {
+        await this.alert.warning('Erros de validação!', validationErrors.join('<br>'));
+
+        return;
+      }
+
+      const erTables = this.resourceForm.get('erTables')?.value || [];
+
+      const tables = erTables.map((table: any) => ({
+        tableName: table.tableName,
+        entityName: table.entityName,
+        tableColumnsFilter: table.tableColumnsFilter || [],
+        tableColumnsList: table.tableColumnsList || [],
+        tableColumnsFormArray: table.tableColumnsFormArray || []
+      }));
+
+      const configuration = {
+        hasTceBase: this.resourceForm.get('hasTceBase')?.value,
+        hasApiVersion: this.resourceForm.get('hasApiVersion')?.value,
+        isServerSide: this.resourceForm.get('isServerSide')?.value,
+        idConfiguracaoEstrutura: pathFormValues.idConfiguracaoEstrutura,
+        projectApiPath: pathFormValues.projectApiPath,
+        projectClientPath: pathFormValues.projectClientPath
+      };
+
+      if (this.erEditor) {
+
+        const model = this.diagram.model as go.GraphLinksModel;
+
+        arquivo = {
+          mode: 'er',
+
+          configuration,
+
+          connectionFilter: {
+            servidor: connectionFormValues.servidor,
+            porta: connectionFormValues.porta,
+            usuario: connectionFormValues.usuario,
+            senha: connectionFormValues.senha,
+            baseDados: connectionFormValues.baseDados,
+          },
+
+          erMode: {
+            diagramModel: {
+              tables: model.nodeDataArray,
+              links: model.linkDataArray
+            },
+            tables
+          }
+        };
+
+      } else {
+
+        arquivo = {
+          mode: 'sql',
+
+          configuration,
+
+          connectionFilter: {
+            servidor: connectionFormValues.servidor,
+            porta: connectionFormValues.porta,
+            usuario: connectionFormValues.usuario,
+            senha: connectionFormValues.senha,
+            baseDados: connectionFormValues.baseDados,
+          },
+
+          sqlMode: {
+            sqlScript: this.resourceForm.get('sqlScript')?.value,
+            tables
+          }
+        };
+      }
+
+    } else {
+
+      const form = this.resourceForm.getRawValue();
+
+      arquivo = {
+        mode: 'database',
+
+        configuration: {
+          hasTceBase: this.resourceForm.get('hasTceBase')?.value,
+          hasApiVersion: this.resourceForm.get('hasApiVersion')?.value,
+          isServerSide: this.resourceForm.get('isServerSide')?.value,
+          idConfiguracaoEstrutura: pathFormValues.idConfiguracaoEstrutura,
+          projectApiPath: pathFormValues.projectApiPath,
+          projectClientPath: pathFormValues.projectClientPath
+        },
+
+        connectionFilter: {
+          servidor: connectionFormValues.servidor,
+          porta: connectionFormValues.porta,
+          usuario: connectionFormValues.usuario,
+          senha: connectionFormValues.senha,
+          baseDados: connectionFormValues.baseDados,
+        },
+
+        databaseMode: {
+          tableName: form.tableName,
+          entityName: form.entityName,
+          tableColumnsFilter: form.tableColumnsFilter || [],
+          tableColumnsList: form.tableColumnsList || [],
+          tableColumnsFormArray: this.tableColumnsFormArray
+            .getRawValue()
+        }
+      };
+    }
+
+    const tipoGeracao = this.erEditor
+      ? TipoGeracaoEnum.Er
+      : this.sqlEditor
+        ? TipoGeracaoEnum.Sql
+        : TipoGeracaoEnum.Database;
+
+    let nomeTipo;
+    switch (tipoGeracao) {
+      case TipoGeracaoEnum.Er:
+        nomeTipo = 'Modelagem Relacional';
+        break;
+      case TipoGeracaoEnum.Sql:
+        nomeTipo = 'Script SQL';
+        break;
+      case TipoGeracaoEnum.Database:
+        nomeTipo = 'Banco de Dados';
+        break;
+      default:
+        nomeTipo = '';
+        break;
+    }
+
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+    const workspace: WorkspaceGeracaoType = {
+      idTipoGeracao: tipoGeracao,
+      arquivo: JSON.stringify(arquivo),
+      nome: `Workspace ${nomeTipo} ${currentUser?.nomePessoaFisica}`
+    };
+
+    try {
+      await this.workspaceService.save(workspace);
+
+      await this.alert.success('Sucesso!', 'Workspace salvo com sucesso.');
+
+    } catch (error) {
+      await this.alert.error('Erro!', 'Erro ao salvar workspace.');
+    }
+  }
+
+  /**
+   * Abre o modal para selecionar um workspace de geração salvo
+   */
+  async openModalWorkspaceGeracao(stepper: MatStepper): Promise<void> {
+    this.modalRef = this.bsModalService.show(
+      WorkspaceModalComponent,
+      {
+        class: 'modal-dialog modal-dialog-centered modal-xl',
+        focus: true,
+        backdrop: 'static',
+        keyboard: true,
+      }
+    );
+
+    this.modalRef?.content?.workspaceSelecionado.subscribe(
+      async (workspace: WorkspaceGeracaoType) => {
+        if (!workspace?.arquivo) return;
+
+        const arquivo = JSON.parse(workspace.arquivo) as GenerateWorkspaceType;
+
+        if (arquivo.connectionFilter) {
+          this.connectionForm.patchValue({
+            baseDados: arquivo.connectionFilter.baseDados,
+            usuario: arquivo.connectionFilter.usuario,
+            senha: arquivo.connectionFilter.senha,
+            servidor: arquivo.connectionFilter.servidor,
+            porta: arquivo.connectionFilter.porta
+          });
+
+          await this.submitConnectionForm();
+        }
+
+        if (arquivo.configuration) {
+          this.pathForm.patchValue({
+            idConfiguracaoEstrutura: arquivo.configuration.idConfiguracaoEstrutura,
+            projectApiPath: arquivo.configuration.projectApiPath,
+            projectClientPath: arquivo.configuration.projectClientPath
+          });
+
+          await this.submitPathForm();
+        }
+
+        stepper.next();
+        stepper.next();
+
+        if (arquivo.mode === 'database' && arquivo.databaseMode) {
+
+          await this.router.navigate([], {
+            queryParams: {
+              erEditor: null,
+              sqlEditor: null
+            },
+            queryParamsHandling: 'merge'
+          });
+
+          this.erEditor = false;
+          this.sqlEditor = false;
+
+          this.resourceForm.patchValue({
+            tableName: arquivo.databaseMode.tableName,
+            entityName: arquivo.databaseMode.entityName,
+            tableColumnsFilter: arquivo.databaseMode.tableColumnsFilter,
+            tableColumnsList: arquivo.databaseMode.tableColumnsList,
+            hasTceBase: arquivo.configuration.hasTceBase,
+            hasApiVersion: arquivo.configuration.hasApiVersion,
+            isServerSide: arquivo.configuration.isServerSide
+          });
+        }
+
+        else if (arquivo.mode === 'er' && arquivo.erMode) {
+
+          this.service.setErModel({
+            tables: arquivo.erMode.diagramModel.tables,
+            links: arquivo.erMode.diagramModel.links
+          });
+
+          await this.router.navigate([], {
+            queryParams: {
+              erEditor: true,
+              sqlEditor: null
+            },
+            queryParamsHandling: 'merge'
+          });
+
+          this.erEditor = true;
+          this.sqlEditor = false;
+
+          this.resourceForm.patchValue({
+            hasTceBase: arquivo.configuration.hasTceBase,
+            hasApiVersion: arquivo.configuration.hasApiVersion,
+            isServerSide: arquivo.configuration.isServerSide
+          });
+
+          setTimeout(() => {
+            if (!this.diagram) {
+              this.initDiagram();
+            }
+
+            this.applyModel({
+              tables: arquivo.erMode?.diagramModel.tables,
+              links: arquivo.erMode?.diagramModel.links
+            });
+
+            this.buildWorkspaceErTables(arquivo.erMode?.tables || []);
+          }, 0);
+        }
+
+        else if (arquivo.mode === 'sql' && arquivo.sqlMode) {
+
+          this.service.setSqlScript(arquivo.sqlMode.sqlScript);
+
+          await this.router.navigate([], {
+            queryParams: {
+              erEditor: null,
+              sqlEditor: true
+            },
+            queryParamsHandling: 'merge'
+          });
+
+          this.erEditor = false;
+          this.sqlEditor = true;
+
+          this.resourceForm.patchValue({
+            sqlScript: arquivo.sqlMode.sqlScript,
+            hasTceBase: arquivo.configuration.hasTceBase,
+            hasApiVersion: arquivo.configuration.hasApiVersion,
+            isServerSide: arquivo.configuration.isServerSide
+          });
+
+          this.isSqlStructureUpdated = true;
+
+          const result = this.service.parseSqlToDiagram(
+            arquivo.sqlMode.sqlScript
+          );
+
+          this.buildWorkspaceErTables(
+            arquivo.sqlMode.tables,
+            result.nodes
+          );
+        }
+      }
+    );
+  }
+
+  private buildWorkspaceErTables(workspaceTables: any[], nodes?: any[]): void {
+
+    const erTables = this.resourceForm.get('erTables') as FormArray;
+
+    erTables.clear();
+
+    workspaceTables.forEach((table: any) => {
+
+      const columns =
+        nodes?.find((n: any) => n.key === table.tableName)?.columns || [];
+
+      const columnsOptions = columns.map((c: any) => ({
+        label: c.name,
+        value: c.name
+      }));
+
+      const tableColumnsFormArray = this.formBuilder.array(
+        (table.tableColumnsFormArray || []).map((column: any) =>
+          this.formBuilder.group({
+            databaseColumn: [column.databaseColumn],
+            displayName: [column.displayName]
+          })
+        )
+      );
+
+      erTables.push(
+        this.formBuilder.group({
+          tableName: [table.tableName],
+          entityName: [table.entityName],
+          tableColumnsFilter: [table.tableColumnsFilter || []],
+          tableColumnsList: [table.tableColumnsList || []],
+          columnsOptions: [columnsOptions],
+          tableColumnsFormArray
+        })
+      );
+    });
   }
 }

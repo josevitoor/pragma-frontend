@@ -1,0 +1,83 @@
+<tce-container>
+  <div class="modal-header">
+    <tce-container-header
+      title="Selecionar Geração Salva"
+      [showBtn]="false"
+    ></tce-container-header>
+    <button
+      type="button"
+      class="close pull-right"
+      aria-label="Close"
+      (click)="modalRef.hide()"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <main>
+    <div class="modal-body">
+      <tce-container>
+        <main>
+          <tce-table
+            id="tabela-workspace"
+            (pageSizeChange)="pageSize = $event"
+            (searchTermChange)="searchTerm = $event"
+            (pageChange)="page = $event"
+          >
+            <div legend>
+              <fa-icon icon="share" class="ml-3"></fa-icon> Selecionar
+            </div>
+            <table
+              aria-describedby="Tabela para a listagem de Workspace de Geração"
+              content
+              class="table table-striped text-center"
+            >
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Nome</th>
+                  <th>Tipo Geração</th>
+                  <th>Data de Inclusão</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="
+                    let item of resources$
+                      | async
+                      | paginate
+                        : {
+                            id: 'tabela-workspace',
+                            itemsPerPage: pageSize,
+                            currentPage: page,
+                            totalItems: total$ | async
+                          }
+                  "
+                >
+                  <td></td>
+                  <td>{{ item.nome }}</td>
+                  <td>{{ item.tipoGeracao }}</td>
+                  <td>{{ item.dataInclusao | date : "dd/MM/yyyy" }}</td>
+                  <td>
+                    <fa-icon
+                      icon="share"
+                      tooltip="Selecionar"
+                      class="ml-2"
+                      (click)="selecionarWorkspace(item)"
+                    ></fa-icon>
+                  </td>
+                </tr>
+                <tr *ngIf="(resources$ | async)?.length == 0">
+                  <td colspan="5">
+                    Nenhum Workspace Encontrado.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </tce-table>
+        </main>
+      </tce-container>
+    </div>
+  </main></tce-container
+>
