@@ -63,6 +63,9 @@ export class GenerateFormComponent
   erEditor: boolean = false;
   sqlEditor: boolean = false;
 
+  isEditWorkspace: boolean = false;
+  idWorkspaceAtual: number | undefined = undefined;
+
   constructor(
     protected injector: Injector,
     private formBuilder: FormBuilder,
@@ -168,7 +171,14 @@ export class GenerateFormComponent
     this.activateRoute.queryParams.subscribe((params) => {
       this.erEditor = params['erEditor'] === 'true';
       this.sqlEditor = params['sqlEditor'] === 'true';
+
       if (this.erEditor) {
+        const model = this.service.getErModel();
+        if (!model) {
+          this.router.navigate(['/dashboard/gerador/modelagem-relacional']);
+          return;
+        }
+
         this.resourceForm.get('tableName')?.clearValidators();
         this.resourceForm.get('entityName')?.clearValidators();
         this.resourceForm.get('tableColumnsList')?.clearValidators();
@@ -181,15 +191,15 @@ export class GenerateFormComponent
           if (!this.diagram) {
             this.initDiagram();
           }
-
-          const model = this.service.getErModel();
-          if (model) {
-            this.applyModel(model);
-          } else {
-            this.buildErTables();
-          }
+          this.applyModel(model);
         }, 0);
       } else if (this.sqlEditor) {
+        const sql = this.service.getSqlScript();
+        if (!sql) {
+          this.router.navigate(['/dashboard/gerador/modelagem-sql']);
+          return;
+        }
+
         this.resourceForm.get('tableName')?.clearValidators();
         this.resourceForm.get('entityName')?.clearValidators();
         this.resourceForm.get('tableColumnsList')?.clearValidators();
@@ -198,11 +208,9 @@ export class GenerateFormComponent
         this.resourceForm.get('entityName')?.updateValueAndValidity();
         this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
 
-        const sql = this.service.getSqlScript();
         this.resourceForm.get('sqlScript')?.setValue(sql);
         this.isSqlStructureUpdated = true;
 
-        if (!sql) return;
         const result = this.service.parseSqlToDiagram(sql);
 
         this.buildErTablesFromSql(result.nodes);
@@ -1598,10 +1606,13 @@ async openArquivo(event: any) {
     };
 
     try {
-      await this.workspaceService.save(workspace);
-
-      await this.alert.success('Sucesso!', 'Workspace salvo com sucesso.');
-
+      if (this.isEditWorkspace && this.idWorkspaceAtual) {
+        await this.workspaceService.update(workspace, this.idWorkspaceAtual);
+        await this.alert.success('Sucesso!', 'Workspace atualizado com sucesso.');
+      } else {
+        await this.workspaceService.save(workspace);
+        await this.alert.success('Sucesso!', 'Workspace salvo com sucesso.');
+      }
     } catch (error) {
       await this.alert.error('Erro!', 'Erro ao salvar workspace.');
     }
@@ -1625,6 +1636,8 @@ async openArquivo(event: any) {
       async (workspace: WorkspaceGeracaoType) => {
         if (!workspace?.arquivo) return;
 
+        this.isEditWorkspace = true;
+        this.idWorkspaceAtual = workspace.idWorkspaceGeracao;
         const arquivo = JSON.parse(workspace.arquivo) as GenerateWorkspaceType;
 
         if (arquivo.connectionFilter) {
