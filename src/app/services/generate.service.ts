@@ -97,25 +97,38 @@ export class GenerateService extends BaseService<GenerateFilterType> {
     tables.forEach(t => {
 
       const tableName = t.name;
-      const body = t.body;
+      const body = t.body
+        .replace(/\r/g, '')
+        .replace(/\n\s+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
       const columns: ColumnDto[] = [];
 
-      const pkMatch = body.match(/PRIMARY KEY\s*\((.*?)\)/i);
-      const pkCols = pkMatch
-        ? pkMatch[1].split(',').map(c => c.trim())
-        : [];
+      const pkCols: string[] = [];
+      const pkRegex = /PRIMARY KEY\s*\((.*?)\)/gi;
 
-      const lines = body
-        .split(/\r?\n/)
-        .map(l => l.trim())
-        .filter(l => l && !l.toUpperCase().startsWith("CONSTRAINT"));
+      let pkMatch;
+      while ((pkMatch = pkRegex.exec(body)) !== null) {
+        const cols = pkMatch[1]
+          .split(',')
+          .map((c: string) => c.trim());
 
-      lines.forEach(line => {
+        pkCols.push(...cols);
+      }
 
-        line = line.replace(/,$/, '');
+      const parts = body
+        .split(/,(?![^(]*\))/g)
+        .map(p => p.trim())
+        .filter(Boolean);
 
-        const match = line.match(/^(\w+)\s+([a-zA-Z0-9()]+)(.*)$/);
+      parts.forEach(part => {
+
+        if (/^CONSTRAINT\s+/i.test(part) || /^PRIMARY KEY/i.test(part) || /^FOREIGN KEY/i.test(part)) {
+          return;
+        }
+
+        const match = part.match(/^(\w+)\s+([a-zA-Z0-9]+(?:\([^)]+\))?)(.*)$/i);
 
         if (!match) return;
 
@@ -132,7 +145,7 @@ export class GenerateService extends BaseService<GenerateFilterType> {
           fk: false,
           nn: rest.includes("NOT NULL"),
           uq: rest.includes("UNIQUE"),
-          ai: rest.includes("IDENTITY") || isPk
+          ai: rest.includes("IDENTITY")
         });
       });
 
@@ -142,28 +155,36 @@ export class GenerateService extends BaseService<GenerateFilterType> {
       });
     });
 
-    const fkRegex = /ALTER TABLE\s+(\w+)[\s\S]*?FOREIGN KEY\s*\((\w+)\)\s*REFERENCES\s+(\w+)\s*\((\w+)\)/gi;
+    const fkRegex = /ALTER TABLE\s+(\w+)[\s\S]*?FOREIGN KEY\s*\((.*?)\)\s*REFERENCES\s+(\w+)\s*\((.*?)\)/gi;
 
     let fkMatch;
 
     while ((fkMatch = fkRegex.exec(cleanSql)) !== null) {
 
       const fromTable = fkMatch[1];
-      const fromColumn = fkMatch[2];
+      const fromColumns = fkMatch[2].split(',').map((c: string) => c.trim());
       const toTable = fkMatch[3];
-      const toColumn = fkMatch[4];
+      const toColumns = fkMatch[4].split(',').map((c: string) => c.trim());
 
-      links.push({
-        from: fromTable,
-        to: toTable,
-        fromColumn: fromColumn,
-        toColumn: toColumn
+      fromColumns.forEach((fromColumn, index) => {
+        const toColumn = toColumns[index];
+        if (!toColumn) return;
+
+        links.push({
+          from: fromTable,
+          to: toTable,
+          fromColumn,
+          toColumn
+        });
+
+        const table = nodes.find(t => t.key === fromTable);
+
+        const col = table?.columns.find(c => c.name === fromColumn);
+
+        if (col) {
+          col.fk = true;
+        }
       });
-
-      const table = nodes.find(t => t.key === fromTable);
-      const col = table?.columns.find((c: any) => c.name === fromColumn);
-
-      if (col) col.fk = true;
     }
 
     return { nodes, links };

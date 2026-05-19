@@ -89,7 +89,7 @@ export class ModelagemSqlFormComponent
     const errors = this.validateSqlModel(sql);
 
     if (errors.length > 0) {
-      this.alerts.warning('Erros de validação!', errors.join('<br>'));
+      this.alerts.errorHtml('Erros de validação!', errors.join('<br>'));
 
       return;
     }

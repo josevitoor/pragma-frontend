@@ -14,8 +14,8 @@
             <span class="badge bg-info ml-2"><strong>AI</strong> - Auto incremento</span>
           </div>
           <div class="d-flex flex-wrap justify-content-end gap-2">
-            <input type="file"#fileInput hidden accept=".json, .sql" (change)="openArquivo($event)"/>
-            <button type="button" class="btn btn-secondary ml-2" (click)="fileInput.click()">
+            <input type="file"#fileInput hidden accept=".json,.sql,application/json,text/plain" (change)="openArquivo($event)"/>
+            <button type="button" class="btn btn-secondary ml-2" tooltip="Arquivos suportados: JSON (Modelo Relacional) e SQL (Script SQL)" (click)="fileInput.click()">
               Abrir
             </button>
             <button type="button" class="btn btn-primary ml-2" (click)="saveDiagram()">

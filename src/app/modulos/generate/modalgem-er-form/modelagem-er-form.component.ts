@@ -360,6 +360,35 @@ export class ModelagemErFormComponent
       this.diagram.model.commitTransaction("set fk");
     });
 
+    // Listener para atualizar FK ao mudar nome da coluna
+    this.diagram.addModelChangedListener((e) => {
+
+      if (e.change === go.ChangedEvent.Property && e.propertyName === 'name') {
+        const oldName = e.oldValue;
+        const newName = e.newValue;
+
+        if (!oldName || !newName || oldName === newName) {
+          return;
+        }
+
+        const model = this.diagram.model as go.GraphLinksModel;
+
+        model.startTransaction('update fk links');
+
+        model.linkDataArray.forEach((link: any) => {
+          if (link.fromColumn === oldName) {
+            model.setDataProperty(link, 'fromColumn', newName);
+          }
+
+          if (link.toColumn === oldName) {
+            model.setDataProperty(link, 'toColumn', newName);
+          }
+        });
+
+        model.commitTransaction('update fk links');
+      }
+    });
+
     const model = new go.GraphLinksModel(this.nodes, this.links);
     model.linkFromPortIdProperty = "fromColumn";
     model.linkToPortIdProperty = "toColumn";
@@ -486,7 +515,7 @@ export class ModelagemErFormComponent
     const errors = this.validateModel();
 
     if (errors.length > 0) {
-      this.alerts.warning('Erros de validação!', errors.join('<br>'));
+      this.alerts.errorHtml('Erros de validação!', errors.join('<br>'));
 
       return;
     }
@@ -499,20 +528,55 @@ export class ModelagemErFormComponent
   }
 
   /**
-  * Salvar diagrama em formato json
+  * Salvar modelo em formato json ou sql
   */
-  saveDiagram() {
-    const json = this.diagram.model.toJson();
+  async saveDiagram() {
+    try {
+      const handle = await (window as any).showSaveFilePicker({
+        suggestedName: 'modelo-relacional',
+        types: [
+          {
+            description: 'Arquivo JSON',
+            accept: {
+              'application/json': ['.json']
+            }
+          },
+          {
+            description: 'Script SQL',
+            accept: {
+              'application/sql': ['.sql']
+            }
+          }
+        ]
+      });
 
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
+      const fileName = handle.name.toLowerCase();
+      let content = '';
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'diagrama-er.json';
-    a.click();
+      if (fileName.endsWith('.json')) {
+        content = this.diagram.model.toJson();
 
-    window.URL.revokeObjectURL(url);
+      } else if (fileName.endsWith('.sql')) {
+        const model = this.diagram.model as go.GraphLinksModel;
+
+        const payload: GenerateSqlRequest = {
+          tables: model.nodeDataArray as TableDto[],
+          links: model.linkDataArray as LinkDto[]
+        };
+
+        content = this.service.generateSql(payload);
+      } else {
+        await this.alerts.warning('Atenção!', 'Formato de arquivo inválido.');
+        return;
+      }
+
+      const writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      await this.alerts.success('Sucesso!', 'Arquivo salvo com sucesso.');
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   
@@ -544,15 +608,27 @@ export class ModelagemErFormComponent
   */
   async openArquivo(event: any) {
     const file = event.target.files[0];
-
     if (!file) return;
 
     const extension = file.name.split('.').pop()?.toLowerCase();
 
-    if (extension === 'json') {
-      this.openDiagram(event)
-    } else {
-      this.importSql(event)
+    try {
+      switch (extension) {
+        case 'json':
+          await this.openDiagram(event);
+          break;
+        case 'sql':
+          await this.importSql(event);
+          break;
+        default:
+          await this.alerts.warning(
+            'Formato inválido',
+            'Selecione um arquivo .json ou .sql'
+          );
+          break;
+      }
+    } finally {
+      event.target.value = null;
     }
   }
 
@@ -574,9 +650,18 @@ export class ModelagemErFormComponent
   validateDiagramModel(nodes: TableDto[], links: LinkDto[]): string[] {
     const errors: string[] = [];
 
-    nodes.forEach((table: any) => {
+    nodes.forEach((table: any, tableIndex: number) => {
       if (!table.key?.trim()) {
         errors.push(`Existe tabela sem nome.`);
+      }
+
+      const duplicatedTable = nodes.some((t: any, i: number) =>
+        i !== tableIndex &&
+        t.key?.trim()?.toLowerCase() === table.key?.trim()?.toLowerCase()
+      );
+
+      if (duplicatedTable) {
+        errors.push(`A tabela '${table.key}' está duplicada.`);
       }
 
       const columns = table.columns || [];
@@ -611,6 +696,12 @@ export class ModelagemErFormComponent
           if (!hasReference) {
             errors.push(`A FK '${table.key}.${column.name}' não possui referência.`);
           }
+        }
+
+        const hasLinkWithoutFk = links.some((l: any) => l.from === table.key && l.fromColumn === column.name);
+
+        if (hasLinkWithoutFk && !column.fk) {
+          errors.push(`A coluna '${table.key}.${column.name}' possui relacionamento mas não está marcada como FK.`);
         }
       });
     });
