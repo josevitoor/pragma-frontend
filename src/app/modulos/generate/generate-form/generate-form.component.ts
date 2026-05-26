@@ -187,12 +187,7 @@ export class GenerateFormComponent
         this.resourceForm.get('entityName')?.updateValueAndValidity();
         this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
 
-        setTimeout(() => {
-          if (!this.diagram) {
-            this.initDiagram();
-          }
-          this.applyModel(model);
-        }, 0);
+        this.waitAndInitDiagram(model);
       } else if (this.sqlEditor) {
         const sql = this.service.getSqlScript();
         if (!sql) {
@@ -616,365 +611,361 @@ export class GenerateFormComponent
    * Inicializa o diagrama de ER utilizando a biblioteca GoJS
    */
   private initDiagram() {
-    try {
-      const $ = go.GraphObject.make;
+    const $ = go.GraphObject.make;
 
-      this.diagram = $(go.Diagram, 'diagramDiv', {
-        'undoManager.isEnabled': true,
-        linkingTool: $(go.LinkingTool),
-        relinkingTool: $(go.RelinkingTool)
-      });
+    this.diagram = $(go.Diagram, 'diagramDiv', {
+      'undoManager.isEnabled': true,
+      linkingTool: $(go.LinkingTool),
+      relinkingTool: $(go.RelinkingTool)
+    });
 
-      this.diagram.nodeTemplate =
-      $(go.Node, "Auto",
-        $(go.Shape, "RoundedRectangle",
-          { fill: "#fff", stroke: "#3C7B6C", strokeWidth: 2 }
+    this.diagram.nodeTemplate =
+    $(go.Node, "Auto",
+      $(go.Shape, "RoundedRectangle",
+        { fill: "#fff", stroke: "#3C7B6C", strokeWidth: 2 }
+      ),
+
+      $(go.Panel, "Vertical",
+
+        // Titulo da tabela
+        $(go.Panel, "Auto",
+          { stretch: go.GraphObject.Horizontal },
+          $(go.Shape, { fill: "#3C7B6C", stroke: null }),
+          $(go.TextBlock,
+            {
+              margin: 6,
+              stroke: "white",
+              font: "bold 13px sans-serif",
+              editable: true
+            },
+            new go.Binding("text", "key").makeTwoWay()
+          )
         ),
 
-        $(go.Panel, "Vertical",
+        // Colunas
+        $(go.Panel, "Table",
+          { stretch: go.GraphObject.Horizontal },
 
-          // Titulo da tabela
-          $(go.Panel, "Auto",
-            { stretch: go.GraphObject.Horizontal },
-            $(go.Shape, { fill: "#3C7B6C", stroke: null }),
-            $(go.TextBlock,
-              {
-                margin: 6,
-                stroke: "white",
-                font: "bold 13px sans-serif",
-                editable: true
-              },
-              new go.Binding("text", "key").makeTwoWay()
+            $(go.Panel, "TableRow",
+              { background: "#f5f5f5" },
+
+              $(go.TextBlock, "Nome", { column: 0, margin: 2, font: "bold 11px sans-serif", width: 110 }),
+              $(go.TextBlock, "Tipo", { column: 1, margin: 2, font: "bold 11px sans-serif", width: 118 }),
+              $(go.TextBlock, "PK", { column: 2, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "FK", { column: 3, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "NN", { column: 4, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "UQ", { column: 5, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "AI", { column: 6, margin: 2, font: "bold 11px sans-serif", width: 33 }),
+              $(go.TextBlock, "", { column: 7, width: 40 })
             )
           ),
 
-          // Colunas
           $(go.Panel, "Table",
-            { stretch: go.GraphObject.Horizontal },
-
+          {
+            padding: 4,
+            defaultAlignment: go.Spot.Left
+          },
+          new go.Binding("itemArray", "columns"),
+          {
+            itemTemplate:
               $(go.Panel, "TableRow",
-                { background: "#f5f5f5" },
+                {
+                  fromLinkable: true,
+                  toLinkable: true,
+                  fromLinkableSelfNode: true,
+                  toLinkableSelfNode: true,
+                  cursor: "pointer",
+                  portId: ""
+                },
+                new go.Binding("portId", "name"),
 
-                $(go.TextBlock, "Nome", { column: 0, margin: 2, font: "bold 11px sans-serif", width: 110 }),
-                $(go.TextBlock, "Tipo", { column: 1, margin: 2, font: "bold 11px sans-serif", width: 118 }),
-                $(go.TextBlock, "PK", { column: 2, margin: 2, font: "bold 11px sans-serif", width: 33 }),
-                $(go.TextBlock, "FK", { column: 3, margin: 2, font: "bold 11px sans-serif", width: 33 }),
-                $(go.TextBlock, "NN", { column: 4, margin: 2, font: "bold 11px sans-serif", width: 33 }),
-                $(go.TextBlock, "UQ", { column: 5, margin: 2, font: "bold 11px sans-serif", width: 33 }),
-                $(go.TextBlock, "AI", { column: 6, margin: 2, font: "bold 11px sans-serif", width: 33 }),
-                $(go.TextBlock, "", { column: 7, width: 40 })
-              )
-            ),
+                // Nome
+                $(go.TextBlock,
+                  { column: 0, margin: 2, editable: true, width: 110 },
+                  new go.Binding("text", "name").makeTwoWay()
+                ),
 
-            $(go.Panel, "Table",
-            {
-              padding: 4,
-              defaultAlignment: go.Spot.Left
-            },
-            new go.Binding("itemArray", "columns"),
-            {
-              itemTemplate:
-                $(go.Panel, "TableRow",
+                // Tipo
+                $(go.TextBlock,
+                  { column: 1, margin: 2, width: 110, editable: true },
+                  new go.Binding("text", "type").makeTwoWay()
+                ),
+
+                // PK
+                $("Button",
                   {
-                    fromLinkable: true,
-                    toLinkable: true,
-                    fromLinkableSelfNode: true,
-                    toLinkableSelfNode: true,
-                    cursor: "pointer",
-                    portId: ""
+                    column: 2,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
+
+                      if (!data || !item) return;
+
+                      this.diagram.model.startTransaction("toggle pk");
+
+                      item.pk = !item.pk;
+
+                      if (item.pk && item.ai === undefined) {
+                        item.ai = true;
+                      }
+                      if (item.pk && item.nn === undefined) {
+                        item.nn = true;
+                      }
+
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle pk");
+                    }
                   },
-                  new go.Binding("portId", "name"),
+                  $(go.TextBlock, new go.Binding("text", "pk", v => v ? "✔" : "-"))
+                ),
 
-                  // Nome
-                  $(go.TextBlock,
-                    { column: 0, margin: 2, editable: true, width: 110 },
-                    new go.Binding("text", "name").makeTwoWay()
-                  ),
+                // FK
+                $("Button",
+                  {
+                    column: 3,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
 
-                  // Tipo
-                  $(go.TextBlock,
-                    { column: 1, margin: 2, width: 110, editable: true },
-                    new go.Binding("text", "type").makeTwoWay()
-                  ),
+                      if (!data || !item) return;
 
-                  // PK
-                  $("Button",
-                    {
-                      column: 2,
-                      width: 35,
-                      click: (e, obj) => {
-                        const data = obj.part?.data;
-                        const item = obj.panel?.data;
+                      this.diagram.model.startTransaction("toggle fk");
+                      item.fk = !item.fk;
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle fk");
+                    }
+                  },
+                  $(go.TextBlock, new go.Binding("text", "fk", v => v ? "✔" : "-"))
+                ),
 
-                        if (!data || !item) return;
+                // NN
+                $("Button",
+                  {
+                    column: 4,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
 
-                        this.diagram.model.startTransaction("toggle pk");
+                      if (!data || !item) return;
 
-                        item.pk = !item.pk;
+                      this.diagram.model.startTransaction("toggle nn");
+                      item.nn = !item.nn;
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle nn");
+                    }
+                  },
+                  $(go.TextBlock, new go.Binding("text", "nn", v => v ? "✔" : "-"))
+                ),
 
-                        if (item.pk && item.ai === undefined) {
-                          item.ai = true;
-                        }
-                        if (item.pk && item.nn === undefined) {
-                          item.nn = true;
-                        }
+                // UQ
+                $("Button",
+                  {
+                    column: 5,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
 
-                        this.diagram.model.updateTargetBindings(data);
-                        this.diagram.model.commitTransaction("toggle pk");
-                      }
-                    },
-                    $(go.TextBlock, new go.Binding("text", "pk", v => v ? "✔" : "-"))
-                  ),
+                      if (!data || !item) return;
 
-                  // FK
-                  $("Button",
-                    {
-                      column: 3,
-                      width: 35,
-                      click: (e, obj) => {
-                        const data = obj.part?.data;
-                        const item = obj.panel?.data;
+                      this.diagram.model.startTransaction("toggle uq");
+                      item.uq = !item.uq;
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle uq");
+                    }
+                  },
+                  $(go.TextBlock, new go.Binding("text", "uq", v => v ? "✔" : "-"))
+                ),
 
-                        if (!data || !item) return;
+                // AI
+                $("Button",
+                  {
+                    column: 6,
+                    width: 35,
+                    click: (e, obj) => {
+                      const data = obj.part?.data;
+                      const item = obj.panel?.data;
 
-                        this.diagram.model.startTransaction("toggle fk");
-                        item.fk = !item.fk;
-                        this.diagram.model.updateTargetBindings(data);
-                        this.diagram.model.commitTransaction("toggle fk");
-                      }
-                    },
-                    $(go.TextBlock, new go.Binding("text", "fk", v => v ? "✔" : "-"))
-                  ),
+                      if (!data || !item) return;
 
-                  // NN
-                  $("Button",
-                    {
-                      column: 4,
-                      width: 35,
-                      click: (e, obj) => {
-                        const data = obj.part?.data;
-                        const item = obj.panel?.data;
+                      this.diagram.model.startTransaction("toggle ai");
+                      item.ai = !item.ai;
+                      this.diagram.model.updateTargetBindings(data);
+                      this.diagram.model.commitTransaction("toggle ai");
+                    }
+                  },
+                  $(go.TextBlock, new go.Binding("text", "ai", v => v ? "✔" : "-"))
+                ),
 
-                        if (!data || !item) return;
+                // DELETE
+                $("Button",
+                  {
+                    column: 7,
+                    width: 35,
+                    click: (e, obj) => {
+                      const node = obj.part?.data;
+                      const column = obj.panel?.data;
+                      if (!node || !column) return;
 
-                        this.diagram.model.startTransaction("toggle nn");
-                        item.nn = !item.nn;
-                        this.diagram.model.updateTargetBindings(data);
-                        this.diagram.model.commitTransaction("toggle nn");
-                      }
-                    },
-                    $(go.TextBlock, new go.Binding("text", "nn", v => v ? "✔" : "-"))
-                  ),
+                      const model = this.diagram.model as go.GraphLinksModel;
+                      this.diagram.model.startTransaction("remove column");
+                      const linksToRemove = model.linkDataArray.filter((l: any) =>
+                        (l.from === node.key && l.fromColumn === column.name) ||
+                        (l.to === node.key && l.toColumn === column.name)
+                      );
 
-                  // UQ
-                  $("Button",
-                    {
-                      column: 5,
-                      width: 35,
-                      click: (e, obj) => {
-                        const data = obj.part?.data;
-                        const item = obj.panel?.data;
-
-                        if (!data || !item) return;
-
-                        this.diagram.model.startTransaction("toggle uq");
-                        item.uq = !item.uq;
-                        this.diagram.model.updateTargetBindings(data);
-                        this.diagram.model.commitTransaction("toggle uq");
-                      }
-                    },
-                    $(go.TextBlock, new go.Binding("text", "uq", v => v ? "✔" : "-"))
-                  ),
-
-                  // AI
-                  $("Button",
-                    {
-                      column: 6,
-                      width: 35,
-                      click: (e, obj) => {
-                        const data = obj.part?.data;
-                        const item = obj.panel?.data;
-
-                        if (!data || !item) return;
-
-                        this.diagram.model.startTransaction("toggle ai");
-                        item.ai = !item.ai;
-                        this.diagram.model.updateTargetBindings(data);
-                        this.diagram.model.commitTransaction("toggle ai");
-                      }
-                    },
-                    $(go.TextBlock, new go.Binding("text", "ai", v => v ? "✔" : "-"))
-                  ),
-
-                  // DELETE
-                  $("Button",
-                    {
-                      column: 7,
-                      width: 35,
-                      click: (e, obj) => {
-                        const node = obj.part?.data;
-                        const column = obj.panel?.data;
-                        if (!node || !column) return;
-
-                        const model = this.diagram.model as go.GraphLinksModel;
-                        this.diagram.model.startTransaction("remove column");
-                        const linksToRemove = model.linkDataArray.filter((l: any) =>
-                          (l.from === node.key && l.fromColumn === column.name) ||
-                          (l.to === node.key && l.toColumn === column.name)
-                        );
-
-                        linksToRemove.forEach((l: any) => model.removeLinkData(l));
-                        model.removeArrayItem(node.columns, node.columns.indexOf(column));
-                        this.diagram.model.commitTransaction("remove column");
-                      }
-                    },
-                    $(go.TextBlock, "🗑")
-                  )
+                      linksToRemove.forEach((l: any) => model.removeLinkData(l));
+                      model.removeArrayItem(node.columns, node.columns.indexOf(column));
+                      this.diagram.model.commitTransaction("remove column");
+                    }
+                  },
+                  $(go.TextBlock, "🗑")
                 )
-            }
-          ),
+              )
+          }
+        ),
 
-          // Adicionar coluna
-          $("Button",
-            {
-              margin: 5,
-              click: (e, obj) => {
-                const node = obj.part?.data;
-                this.addColumn(node);
-              }
-            },
-            $(go.TextBlock, "adicionar coluna")
-          )
+        // Adicionar coluna
+        $("Button",
+          {
+            margin: 5,
+            click: (e, obj) => {
+              const node = obj.part?.data;
+              this.addColumn(node);
+            }
+          },
+          $(go.TextBlock, "adicionar coluna")
         )
+      )
+    );
+
+    this.diagram.linkTemplate =
+    $(go.Link,
+      {
+        routing: go.Link.AvoidsNodes,
+        corner: 20,
+        reshapable: true,
+        resegmentable: true
+      },
+
+      new go.Binding("fromSpot", "", (d, obj) => {
+        const link = obj.part;
+        return link?.fromNode === link?.toNode ? go.Spot.Right : go.Spot.Right;
+      }),
+
+      new go.Binding("toSpot", "", (d, obj) => {
+        const link = obj.part;
+        return link?.fromNode === link?.toNode ? go.Spot.Right : go.Spot.Left;
+      }),
+
+      $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
+      $(go.Shape, { toArrow: "Standard" })
+    );
+
+    // Validação para evitar criação de links duplicados e garantir que o destino seja uma PK
+    this.diagram.toolManager.linkingTool.linkValidation = (fromNode, fromPort, toNode, toPort) => {
+      const model = this.diagram.model as go.GraphLinksModel;
+      const links = model.linkDataArray;
+
+      const fromTable = fromNode.data;
+      const toTable = toNode.data;
+
+      const fromColumnName = fromPort.portId;
+      const toColumnName = toPort.portId;
+
+      const fromColumn = fromTable.columns?.find((c: any) => c.name === fromColumnName);
+      const toColumn = toTable.columns?.find((c: any) => c.name === toColumnName);
+
+      if (!fromColumn || !toColumn) return false;
+
+      if (!toColumn.pk) return false;
+
+      if (fromTable.key === toTable.key && fromColumnName === toColumnName) {
+        return false;
+      }
+
+      const alreadyLinked = links.some((l: any) =>
+        l.from === fromTable.key &&
+        l.fromColumn === fromColumnName
       );
 
-      this.diagram.linkTemplate =
-      $(go.Link,
-        {
-          routing: go.Link.AvoidsNodes,
-          corner: 20,
-          reshapable: true,
-          resegmentable: true
-        },
+      if (alreadyLinked) return false;
 
-        new go.Binding("fromSpot", "", (d, obj) => {
-          const link = obj.part;
-          return link?.fromNode === link?.toNode ? go.Spot.Right : go.Spot.Right;
-        }),
-
-        new go.Binding("toSpot", "", (d, obj) => {
-          const link = obj.part;
-          return link?.fromNode === link?.toNode ? go.Spot.Right : go.Spot.Left;
-        }),
-
-        $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
-        $(go.Shape, { toArrow: "Standard" })
+      const duplicate = links.some((l: any) =>
+        l.from === fromTable.key &&
+        l.to === toTable.key &&
+        l.fromColumn === fromColumnName &&
+        l.toColumn === toColumnName
       );
 
-      // Validação para evitar criação de links duplicados e garantir que o destino seja uma PK
-      this.diagram.toolManager.linkingTool.linkValidation = (fromNode, fromPort, toNode, toPort) => {
+      if (duplicate) return false;
+
+      return true;
+    };
+
+    // Listener para marcar coluna como FK ao criar um link
+    this.diagram.addDiagramListener("LinkDrawn", (e) => {
+      const link = e.subject;
+      const fromNode = link.fromNode.data;
+      const fromColumnName = link.data.fromColumn;
+
+      this.diagram.model.startTransaction("set fk");
+
+      const fromColumn = fromNode.columns?.find((c: any) => c.name === fromColumnName);
+
+      if (fromColumn) {
+        fromColumn.fk = true;
+      }
+
+      this.diagram.model.updateTargetBindings(fromNode);
+      this.diagram.model.commitTransaction("set fk");
+    });
+
+    // Listener para sincronizar o formulário com o diagrama
+    this.diagram.addModelChangedListener((e) => {
+      if (e.isTransactionFinished) {
+        if (this.erEditor) {
+          this.syncErFormWithDiagram();
+        }
+      }
+    });
+
+    // Listener para atualizar FK ao mudar nome da coluna
+    this.diagram.addModelChangedListener((e) => {
+
+      if (e.change === go.ChangedEvent.Property && e.propertyName === 'name') {
+        const oldName = e.oldValue;
+        const newName = e.newValue;
+
+        if (!oldName || !newName || oldName === newName) {
+          return;
+        }
+
         const model = this.diagram.model as go.GraphLinksModel;
-        const links = model.linkDataArray;
 
-        const fromTable = fromNode.data;
-        const toTable = toNode.data;
+        model.startTransaction('update fk links');
 
-        const fromColumnName = fromPort.portId;
-        const toColumnName = toPort.portId;
-
-        const fromColumn = fromTable.columns?.find((c: any) => c.name === fromColumnName);
-        const toColumn = toTable.columns?.find((c: any) => c.name === toColumnName);
-
-        if (!fromColumn || !toColumn) return false;
-
-        if (!toColumn.pk) return false;
-
-        if (fromTable.key === toTable.key && fromColumnName === toColumnName) {
-          return false;
-        }
-
-        const alreadyLinked = links.some((l: any) =>
-          l.from === fromTable.key &&
-          l.fromColumn === fromColumnName
-        );
-
-        if (alreadyLinked) return false;
-
-        const duplicate = links.some((l: any) =>
-          l.from === fromTable.key &&
-          l.to === toTable.key &&
-          l.fromColumn === fromColumnName &&
-          l.toColumn === toColumnName
-        );
-
-        if (duplicate) return false;
-
-        return true;
-      };
-
-      // Listener para marcar coluna como FK ao criar um link
-      this.diagram.addDiagramListener("LinkDrawn", (e) => {
-        const link = e.subject;
-        const fromNode = link.fromNode.data;
-        const fromColumnName = link.data.fromColumn;
-
-        this.diagram.model.startTransaction("set fk");
-
-        const fromColumn = fromNode.columns?.find((c: any) => c.name === fromColumnName);
-
-        if (fromColumn) {
-          fromColumn.fk = true;
-        }
-
-        this.diagram.model.updateTargetBindings(fromNode);
-        this.diagram.model.commitTransaction("set fk");
-      });
-
-      // Listener para sincronizar o formulário com o diagrama
-      this.diagram.addModelChangedListener((e) => {
-        if (e.isTransactionFinished) {
-          if (this.erEditor) {
-            this.syncErFormWithDiagram();
-          }
-        }
-      });
-
-      // Listener para atualizar FK ao mudar nome da coluna
-      this.diagram.addModelChangedListener((e) => {
-
-        if (e.change === go.ChangedEvent.Property && e.propertyName === 'name') {
-          const oldName = e.oldValue;
-          const newName = e.newValue;
-
-          if (!oldName || !newName || oldName === newName) {
-            return;
+        model.linkDataArray.forEach((link: any) => {
+          if (link.fromColumn === oldName) {
+            model.setDataProperty(link, 'fromColumn', newName);
           }
 
-          const model = this.diagram.model as go.GraphLinksModel;
+          if (link.toColumn === oldName) {
+            model.setDataProperty(link, 'toColumn', newName);
+          }
+        });
 
-          model.startTransaction('update fk links');
+        model.commitTransaction('update fk links');
+      }
+    });
 
-          model.linkDataArray.forEach((link: any) => {
-            if (link.fromColumn === oldName) {
-              model.setDataProperty(link, 'fromColumn', newName);
-            }
-
-            if (link.toColumn === oldName) {
-              model.setDataProperty(link, 'toColumn', newName);
-            }
-          });
-
-          model.commitTransaction('update fk links');
-        }
-      });
-
-      const model = new go.GraphLinksModel(this.nodes, this.links);
-      model.linkFromPortIdProperty = "fromColumn";
-      model.linkToPortIdProperty = "toColumn";
-      this.diagram.model = model;
-    } catch (ex) {
-      console.error(ex);
-    }
+    const model = new go.GraphLinksModel(this.nodes, this.links);
+    model.linkFromPortIdProperty = "fromColumn";
+    model.linkToPortIdProperty = "toColumn";
+    this.diagram.model = model;
   }
 
  /**
@@ -1656,6 +1647,10 @@ async openArquivo(event: any) {
           await this.submitConnectionForm();
         }
 
+        if (!this.connectionCompleted) return;
+
+        stepper.next();
+
         if (arquivo.configuration) {
           this.pathForm.patchValue({
             idConfiguracaoEstrutura: arquivo.configuration.idConfiguracaoEstrutura,
@@ -1666,7 +1661,8 @@ async openArquivo(event: any) {
           await this.submitPathForm();
         }
 
-        stepper.next();
+        if (!this.pathCompleted) return;
+
         stepper.next();
 
         if (arquivo.mode === 'database' && arquivo.databaseMode) {
@@ -1717,18 +1713,11 @@ async openArquivo(event: any) {
             isServerSide: arquivo.configuration.isServerSide
           });
 
-          setTimeout(() => {
-            if (!this.diagram) {
-              this.initDiagram();
-            }
-
-            this.applyModel({
-              tables: arquivo.erMode?.diagramModel.tables,
-              links: arquivo.erMode?.diagramModel.links
-            });
-
-            this.buildWorkspaceErTables(arquivo.erMode?.tables || []);
-          }, 0);
+          this.waitAndInitDiagram({
+            tables: arquivo.erMode?.diagramModel.tables,
+            links: arquivo.erMode?.diagramModel.links
+          });
+          this.buildWorkspaceErTables(arquivo.erMode?.tables || []);
         }
 
         else if (arquivo.mode === 'sql' && arquivo.sqlMode) {
@@ -1768,6 +1757,9 @@ async openArquivo(event: any) {
     );
   }
 
+  /**
+   * Constrói tabelas do formulário de ER com base nas tabelas do workspace e nos nós do diagrama para manter as opções de colunas atualizadas
+   */ 
   private buildWorkspaceErTables(workspaceTables: any[], nodes?: any[]): void {
 
     const erTables = this.resourceForm.get('erTables') as FormArray;
@@ -1804,5 +1796,29 @@ async openArquivo(event: any) {
         })
       );
     });
+  }
+
+  /**
+   * Renderiza diagrama após garantir que o elemento HTML esteja disponível
+   */
+  private waitAndInitDiagram(model: any, attempts = 0) {
+    const div = document.getElementById('diagramDiv');
+    if (!div) {
+      if (attempts >= 5) {
+        return;
+      }
+
+      setTimeout(() => {
+        this.waitAndInitDiagram(model, attempts + 1);
+      }, 100);
+
+      return;
+    }
+
+    if (!this.diagram) {
+      this.initDiagram();
+    }
+
+    this.applyModel(model);
   }
 }

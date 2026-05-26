@@ -290,7 +290,7 @@
                         formControlName="entityName"
                         type="text"
                         placeholder="Digite o nome da entidade"
-                        [control]="resourceForm.get('entityName')"
+                        [control]="table.get('entityName')"
                       >
                       </tce-input-field>
                     </div>
@@ -303,6 +303,7 @@
                         bindLabelSelect="label"
                         bindValueSelect="value"
                         placeholder="Selecione os campos que irão aparecer na tabela"
+                        [control]="table.get('tableColumnsList')"
                       >
                       </tce-select-field>
                     </div>
@@ -315,6 +316,7 @@
                         bindLabelSelect="label"
                         bindValueSelect="value"
                         placeholder="Selecione os campos da tabela com filtro habilitado"
+                        [control]="table.get('tableColumnsFilter')"
                       >
                       </tce-select-field>
                     </div>
@@ -398,6 +400,7 @@
                         bindLabelSelect="label"
                         bindValueSelect="value"
                         placeholder="Selecione os campos que irão aparecer na tabela"
+                        [control]="table.get('tableColumnsList')"
                       >
                       </tce-select-field>
                     </div>
@@ -409,7 +412,9 @@
                         [deveSerMultiplo]="true"
                         bindLabelSelect="label"
                         bindValueSelect="value"
-                        placeholder="Selecione os campos da tabela com filtro habilitado">
+                        placeholder="Selecione os campos da tabela com filtro habilitado"
+                        [control]="table.get('tableColumnsFilter')"
+                      >
                       </tce-select-field>
                     </div>
                   </div>
