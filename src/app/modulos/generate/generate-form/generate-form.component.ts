@@ -188,14 +188,7 @@ export class GenerateFormComponent
         this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
 
         setTimeout(() => {
-          if (!this.diagram) {
-            this.initDiagram();
-          }
-          if (model) {
-            this.applyModel(model);
-          } else {
-            this.buildErTables();
-          }
+          this.applyModel(model);
         }, 0);
       } else if (this.sqlEditor) {
         const sql = this.service.getSqlScript();
