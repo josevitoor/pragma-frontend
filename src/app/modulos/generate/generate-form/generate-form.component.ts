@@ -191,7 +191,11 @@ export class GenerateFormComponent
           if (!this.diagram) {
             this.initDiagram();
           }
-          this.applyModel(model);
+          if (model) {
+            this.applyModel(model);
+          } else {
+            this.buildErTables();
+          }
         }, 0);
       } else if (this.sqlEditor) {
         const sql = this.service.getSqlScript();
