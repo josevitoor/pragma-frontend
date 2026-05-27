@@ -637,8 +637,47 @@ export class GenerateFormComponent
               margin: 6,
               stroke: "white",
               font: "bold 13px sans-serif",
-              editable: true
+              editable: true,
+
+              textEdited: (textBlock, oldValue, newValue) => {
+                const node = textBlock.part?.data;
+                if (!node) return;
+
+                const normalizedName = newValue?.trim();
+                if (!normalizedName) {
+                  textBlock.text = oldValue;
+                  return;
+                }
+
+                const model = this.diagram.model as go.GraphLinksModel;
+                const duplicated = model.nodeDataArray.some((n: any) =>
+                  n !== node &&
+                  n.key?.toLowerCase() === normalizedName.toLowerCase()
+                );
+
+                if (duplicated) {
+                  textBlock.text = oldValue;
+                  this.alert.warning('Atenção!', `Já existe uma tabela com o nome '${normalizedName}'.`);
+
+                  return;
+                }
+
+                model.startTransaction("update table name");
+                model.setDataProperty(node, "key", normalizedName);
+
+                model.linkDataArray.forEach((link: any) => {
+                  if (link.from === oldValue) {
+                    model.setDataProperty(link, "from", normalizedName);
+                  }
+                  if (link.to === oldValue) {
+                    model.setDataProperty(link, "to", normalizedName);
+                  }
+                });
+
+                model.commitTransaction("update table name");
+              }
             },
+
             new go.Binding("text", "key").makeTwoWay()
           )
         ),
