@@ -8,6 +8,7 @@ export interface ConfiguracaoEstruturaProjetoType {
   apiMapping: string;
   apiContexts: string;
   apiServices: string;
+  apiTests: string;
   apiImportInfraService: string;
   apiImportInfraIService: string;
   apiImportUOW: string;

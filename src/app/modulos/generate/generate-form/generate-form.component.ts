@@ -1,5 +1,5 @@
 import { Component, ElementRef, Injector, OnInit, ViewChild } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { GenerateFilterType } from 'src/app/models/GenerateFilterType';
 import { InformationType } from 'src/app/models/InformationType';
@@ -168,7 +168,7 @@ export class GenerateFormComponent
 
     this.configuracoesEstruturas = await this.configEstrutura.getAll().then();
 
-    this.activateRoute.queryParams.subscribe((params) => {
+    this.activateRoute.queryParams.subscribe(async (params) => {
       this.erEditor = params['erEditor'] === 'true';
       this.sqlEditor = params['sqlEditor'] === 'true';
 
@@ -187,7 +187,7 @@ export class GenerateFormComponent
         this.resourceForm.get('entityName')?.updateValueAndValidity();
         this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
 
-        this.waitAndInitDiagram(model);
+        await this.waitAndInitDiagram(model);
       } else if (this.sqlEditor) {
         const sql = this.service.getSqlScript();
         if (!sql) {
@@ -535,41 +535,42 @@ export class GenerateFormComponent
       .trim();
   }
 
+  private createErTableFormGroup(table: any): FormGroup {
+    const group = this.formBuilder.group({
+      tableName: [table.key],
+      entityName: [table.key, Validators.required],
+      tableColumnsList: [[]],
+      tableColumnsFilter: [[]],
+      columnsOptions: [table.columns.map((col: any) => ({
+        label: col.name,
+        value: col.name
+      }))],
+      tableColumnsFormArray: this.formBuilder.array([])
+    });
+
+    group.get('tableColumnsList')?.valueChanges.subscribe(() => {
+      this.updateErTableColumnsFormArray(group);
+    });
+
+    group.get('tableColumnsFilter')?.valueChanges.subscribe(() => {
+      this.updateErTableColumnsFormArray(group);
+    });
+
+    return group;
+  }
+
   private buildErTables() {
     const nodes = this.diagram.model.nodeDataArray;
     const erTables = this.resourceForm.get('erTables') as FormArray;
 
     erTables.clear();
 
-    nodes.forEach((table: any, index: number) => {
-
-      const group = this.formBuilder.group({
-        tableName: [table.key],
-        entityName: [table.key, Validators.required],
-        tableColumnsList: [[]],
-        tableColumnsFilter: [[]],
-        columnsOptions: [table.columns.map((col: any) => ({
-          label: col.name,
-          value: col.name
-        }))],
-        tableColumnsFormArray: this.formBuilder.array([])
-      });
-
-      group.get('tableColumnsList')?.valueChanges.subscribe(() => {
-        this.updateErTableColumnsFormArray(index);
-      });
-
-      group.get('tableColumnsFilter')?.valueChanges.subscribe(() => {
-        this.updateErTableColumnsFormArray(index);
-      });
-
-      erTables.push(group);
+    nodes.forEach((table: any) => {
+      erTables.push(this.createErTableFormGroup(table));
     });
   }
 
-  private updateErTableColumnsFormArray(index: number) {
-    const erTables = this.resourceForm.get('erTables') as FormArray;
-    const tableGroup = erTables.at(index);
+  private updateErTableColumnsFormArray(tableGroup: AbstractControl) {
 
     const filterColumns = tableGroup.get('tableColumnsFilter')?.value || [];
     const listColumns = tableGroup.get('tableColumnsList')?.value || [];
@@ -972,12 +973,18 @@ export class GenerateFormComponent
    * Adiciona nova tabela ao diagrama
    */
   addTable() {
-    this.diagram.model.addNodeData({
+    const table = {
       key: 'TabelaNova',
       columns: [
         { name: 'Id', type: 'INT', pk: true, fk: false, nn: true, uq: false, ai: true }
       ]
-    });
+    };
+
+    this.diagram.model.addNodeData(table);
+
+    const erTables = this.resourceForm.get('erTables') as FormArray;
+
+    erTables.push(this.createErTableFormGroup(table));
   }
 
   /**
@@ -1666,15 +1673,6 @@ async openArquivo(event: any) {
         stepper.next();
 
         if (arquivo.mode === 'database' && arquivo.databaseMode) {
-
-          await this.router.navigate([], {
-            queryParams: {
-              erEditor: null,
-              sqlEditor: null
-            },
-            queryParamsHandling: 'merge'
-          });
-
           this.erEditor = false;
           this.sqlEditor = false;
 
@@ -1687,6 +1685,14 @@ async openArquivo(event: any) {
             hasApiVersion: arquivo.configuration.hasApiVersion,
             isServerSide: arquivo.configuration.isServerSide
           });
+
+          this.resourceForm.get('tableName')?.setValidators([Validators.required]);
+          this.resourceForm.get('entityName')?.setValidators([Validators.required]);
+          this.resourceForm.get('tableColumnsList')?.setValidators([Validators.required]);
+
+          this.resourceForm.get('tableName')?.updateValueAndValidity();
+          this.resourceForm.get('entityName')?.updateValueAndValidity();
+          this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
         }
 
         else if (arquivo.mode === 'er' && arquivo.erMode) {
@@ -1694,14 +1700,6 @@ async openArquivo(event: any) {
           this.service.setErModel({
             tables: arquivo.erMode.diagramModel.tables,
             links: arquivo.erMode.diagramModel.links
-          });
-
-          await this.router.navigate([], {
-            queryParams: {
-              erEditor: true,
-              sqlEditor: null
-            },
-            queryParamsHandling: 'merge'
           });
 
           this.erEditor = true;
@@ -1713,24 +1711,27 @@ async openArquivo(event: any) {
             isServerSide: arquivo.configuration.isServerSide
           });
 
-          this.waitAndInitDiagram({
+          await this.waitAndInitDiagram({
             tables: arquivo.erMode?.diagramModel.tables,
             links: arquivo.erMode?.diagramModel.links
           });
-          this.buildWorkspaceErTables(arquivo.erMode?.tables || []);
+          this.buildWorkspaceErTables(
+            arquivo.erMode?.tables || [],
+            arquivo.erMode.diagramModel.tables
+          );
+
+          this.resourceForm.get('tableName')?.clearValidators();
+          this.resourceForm.get('entityName')?.clearValidators();
+          this.resourceForm.get('tableColumnsList')?.clearValidators();
+
+          this.resourceForm.get('tableName')?.updateValueAndValidity();
+          this.resourceForm.get('entityName')?.updateValueAndValidity();
+          this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
         }
 
         else if (arquivo.mode === 'sql' && arquivo.sqlMode) {
 
           this.service.setSqlScript(arquivo.sqlMode.sqlScript);
-
-          await this.router.navigate([], {
-            queryParams: {
-              erEditor: null,
-              sqlEditor: true
-            },
-            queryParamsHandling: 'merge'
-          });
 
           this.erEditor = false;
           this.sqlEditor = true;
@@ -1752,6 +1753,14 @@ async openArquivo(event: any) {
             arquivo.sqlMode.tables,
             result.nodes
           );
+
+          this.resourceForm.get('tableName')?.clearValidators();
+          this.resourceForm.get('entityName')?.clearValidators();
+          this.resourceForm.get('tableColumnsList')?.clearValidators();
+
+          this.resourceForm.get('tableName')?.updateValueAndValidity();
+          this.resourceForm.get('entityName')?.updateValueAndValidity();
+          this.resourceForm.get('tableColumnsList')?.updateValueAndValidity();
         }
       }
     );
@@ -1801,24 +1810,31 @@ async openArquivo(event: any) {
   /**
    * Renderiza diagrama após garantir que o elemento HTML esteja disponível
    */
-  private waitAndInitDiagram(model: any, attempts = 0) {
-    const div = document.getElementById('diagramDiv');
-    if (!div) {
-      if (attempts >= 5) {
-        return;
-      }
+  private waitAndInitDiagram(model: any, attempts = 0): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const tryInit = () => {
+        const div = document.getElementById('diagramDiv');
 
-      setTimeout(() => {
-        this.waitAndInitDiagram(model, attempts + 1);
-      }, 100);
+        if (!div) {
+          if (attempts >= 20) {
+            reject('diagramDiv não encontrada.');
+            return;
+          }
 
-      return;
-    }
+          attempts++;
+          setTimeout(tryInit, 100);
+          return;
+        }
 
-    if (!this.diagram) {
-      this.initDiagram();
-    }
+        if (!this.diagram) {
+          this.initDiagram();
+        }
 
-    this.applyModel(model);
+        this.applyModel(model);
+        resolve();
+      };
+
+      tryInit();
+    });
   }
 }

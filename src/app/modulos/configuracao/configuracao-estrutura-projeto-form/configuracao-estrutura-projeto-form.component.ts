@@ -32,6 +32,7 @@ export class ConfiguracaoEstruturaProjetoFormComponent
       apiMapping: [null, [Validators.required, Validators.maxLength(100)]],
       apiContexts: [null, [Validators.required, Validators.maxLength(100)]],
       apiServices: [null, [Validators.required, Validators.maxLength(100)]],
+      apiTests: [null, [Validators.required, Validators.maxLength(100)]],
       apiImportInfraService: [null, [Validators.maxLength(50)]],
       apiImportInfraIService: [null, [Validators.maxLength(50)]],
       apiImportUOW: [null, [Validators.maxLength(50)]],

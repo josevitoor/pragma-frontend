@@ -91,7 +91,7 @@
             </div>
             <div class="form-row mt-2">
               <tce-input-field
-                class="col-6"
+                class="col-4"
                 label="Mapping"
                 placeholder="Digite o caminho da pasta Mapping"
                 type="text"
@@ -100,12 +100,21 @@
                 [isReadOnly]="!canEdit"
               ></tce-input-field>
               <tce-input-field
-                class="col-6"
+                class="col-4"
                 label="Services"
                 placeholder="Digite o caminho da pasta Services"
                 type="text"
                 formControlName="apiServices"
                 [control]="resourceForm.get('apiServices')"
+                [isReadOnly]="!canEdit"
+              ></tce-input-field>
+              <tce-input-field
+                class="col-4"
+                label="Tests"
+                placeholder="Digite o caminho da pasta Tests"
+                type="text"
+                formControlName="apiTests"
+                [control]="resourceForm.get('apiTests')"
                 [isReadOnly]="!canEdit"
               ></tce-input-field>
             </div>
